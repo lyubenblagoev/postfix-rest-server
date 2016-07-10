@@ -1,0 +1,10 @@
+bin
+build
+.gradle
+.settings
+.eclipse
+.project
+.classpath
+.springBeans
+.factorypath
+/.apt_generated/
