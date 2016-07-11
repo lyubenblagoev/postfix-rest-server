@@ -31,7 +31,7 @@ public class AliasServiceImpl implements AliasService {
 		if (entity == null) {
 			throw new AliasNotFoundException("alias with id " + id + " not found");
 		}
-		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail());
+		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 
 	@Override
@@ -39,7 +39,7 @@ public class AliasServiceImpl implements AliasService {
 		List<Alias> entities = repository.findByDomainId(domainId);
 		if (entities.size() > 0) {
 			List<AliasResource> result = entities.stream().map(e -> {
-				return new AliasResource(e.getId(), e.getAlias(), e.getEmail());
+				return new AliasResource(e.getId(), e.getAlias(), e.getEmail(), e.isEnabled(), e.getCreated(), e.getUpdated());
 			}).collect(Collectors.toList());
 			return result;
 		}
@@ -61,7 +61,7 @@ public class AliasServiceImpl implements AliasService {
 		entity.setAlias(alias.getAlias());
 		entity.setEmail(alias.getEmail());
 		entity = repository.save(entity);
-		return new AliasResource(entity.getId(), alias.getAlias(), alias.getEmail());
+		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 	
 	@Override

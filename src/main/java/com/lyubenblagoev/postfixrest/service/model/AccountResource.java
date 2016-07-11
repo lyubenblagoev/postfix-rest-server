@@ -1,11 +1,16 @@
 package com.lyubenblagoev.postfixrest.service.model;
 
+import java.util.Date;
+
 public class AccountResource {
 
 	private Long id;
 	private String username;
 	private String domain;
 	private Long domainId;
+	private Date created;
+	private Date updated;
+	private boolean enabled;
 	
 	public AccountResource() {
 	}
@@ -15,6 +20,16 @@ public class AccountResource {
 		this.username = username;
 		this.domain = domain;
 		this.domainId = domainId;
+	}
+
+	public AccountResource(Long id, String username, String domain, Long domainId, boolean enabled, Date created, Date updated) {
+		this.id = id;
+		this.username = username;
+		this.domain = domain;
+		this.domainId = domainId;
+		this.enabled = enabled;
+		this.created = created;
+		this.updated = updated;
 	}
 
 	public Long getId() {
@@ -47,6 +62,30 @@ public class AccountResource {
 
 	public void setDomainId(Long domainId) {
 		this.domainId = domainId;
+	}
+
+	public Date getCreated() {
+		return created;
+	}
+
+	public void setCreated(Date created) {
+		this.created = created;
+	}
+
+	public Date getUpdated() {
+		return updated;
+	}
+
+	public void setUpdated(Date updated) {
+		this.updated = updated;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 
 }

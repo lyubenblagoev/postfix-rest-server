@@ -22,7 +22,7 @@ public class DomainServiceImpl implements DomainService {
 	public List<DomainResource> getAllDomains() {
 		Iterable<Domain> entities = repository.findAll();
 		List<DomainResource> domains = new ArrayList<>();
-		entities.forEach(e -> domains.add(new DomainResource(e.getId(), e.getName())));
+		entities.forEach(e -> domains.add(new DomainResource(e.getId(), e.getName(), e.isEnabled(), e.getCreated(), e.getUpdated())));
 		return domains;
 	}
 
@@ -32,7 +32,7 @@ public class DomainServiceImpl implements DomainService {
 		if (entity == null) {
 			throw new DomainNotFoundException("no domain with id " + id);
 		}
-		return new DomainResource(entity.getId(), entity.getName());
+		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class DomainServiceImpl implements DomainService {
 		if (entity == null) {
 			throw new DomainNotFoundException("no domain with name " + name);
 		}
-		return new DomainResource(entity.getId(), entity.getName());
+		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class DomainServiceImpl implements DomainService {
 		Domain entity = domain.getId() != null ? repository.findOne(domain.getId()) : new Domain();
 		entity.setName(domain.getName());
 		entity = repository.save(entity);
-		return new DomainResource(entity.getId(), entity.getName());
+		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 
 	@Override

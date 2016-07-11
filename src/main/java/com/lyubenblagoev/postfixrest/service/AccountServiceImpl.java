@@ -29,7 +29,8 @@ public class AccountServiceImpl implements AccountService {
 	public List<AccountResource> getAllAccounts() {
 		Iterable<Account> entities = repository.findAll();
 		List<AccountResource> accounts = new ArrayList<>();
-		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), e.getDomain().getId())));
+		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), 
+				e.getDomain().getId(), e.isEnabled(), e.getCreated(), e.getUpdated())));
 		return accounts;
 	}
 
@@ -39,14 +40,16 @@ public class AccountServiceImpl implements AccountService {
 		if (entity == null) {
 			throw new AccountNotFoundException("no account with id " + id);
 		}
-		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), entity.getDomain().getId());
+		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), 
+				entity.getDomain().getId(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 	
 	@Override
 	public List<AccountResource> getAccountsByDomainId(Long id) {
 		List<Account> entities = repository.findByDomainId(id);
 		List<AccountResource> accounts = new ArrayList<>(entities.size());
-		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), e.getDomain().getId())));
+		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), 
+				e.getDomain().getId(), e.isEnabled(), e.getCreated(), e.getUpdated())));
 		return accounts;
 	} 
 
@@ -68,7 +71,8 @@ public class AccountServiceImpl implements AccountService {
 			entity.setPassword(Crypt.crypt(account.getPassword()));
 		}
 		entity = repository.save(entity);
-		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), entity.getDomain().getId());
+		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), 
+				entity.getDomain().getId(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 	
 	@Override
