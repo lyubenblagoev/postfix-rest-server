@@ -10,6 +10,8 @@ You need Java 8 installed on the server. For building the project you need [Grad
 
 Out of the box it works with MySQL based databases, but can also be used with other databases for which a suitable JDBC driver exist.
 
+The Postfix REST Server uses the database schema provided in my [postfix-database](https://github.com/lyubenblagoev/postfix-database) project.
+
 Tested with Java 8 and MariaDB 10.1.14.
 
 ## Building the application
