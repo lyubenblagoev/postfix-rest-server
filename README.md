@@ -80,6 +80,17 @@ Here's a short overview about the possible REST API calls:
   * **PUT** http://URL/api/v1/domains/{domainId}/aliases/{id} - update alias with ID {id} for domain {domainId} (params: alias, email)
   * **DELETE** http://URL/api/v1/domains/{domainId}/aliases/{id} - delete alias with id {id} for domain {domainId}
 
+**BCCs**
+
+  * **GET** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming - get the automatic BCC address for all mail targeted to the specified account
+  * **GET** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing - get the automatic BCC address for all mail that is sent from the specified account
+  * **POST** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming - set automatic BCC address for all mail targeted to the specified account
+  * **POST** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing - set automatic BCC address for all mail that is sent from the specified account
+  * **PUT** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming/{bccId} - update the specified BCC address
+  * **PUT** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing/{bccId} - update the specified BCC address
+  * **DELETE** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming/{bccId} - delete the incomming BCC address for the specified account
+  * **DELETE** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing/{bccId} - delete the outgoing BCC address for the specified account
+
 ## Bug reports 
 
 If you discover any bugs, feel free to create an issue on GitHub. Please add as much information as possible to help me fixing the possible bug. I encourage you to help even more by forking the project and sending a pull request.
