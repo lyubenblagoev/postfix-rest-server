@@ -12,6 +12,7 @@ public class AccountChangeRequest {
 	private String password;
 	private String confirmPassword;
 	private Long domainId;
+	private Boolean enabled;
 
 	public Long getId() {
 		return id;
@@ -51,6 +52,14 @@ public class AccountChangeRequest {
 
 	public void setDomainId(Long domainId) {
 		this.domainId = domainId;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 
 }

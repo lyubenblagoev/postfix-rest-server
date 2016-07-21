@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,10 @@ public class DomainServiceImpl implements DomainService {
 
 		Domain entity = domain.getId() != null ? repository.findOne(domain.getId()) : new Domain();
 		entity.setName(domain.getName());
+		if (domain.getEnabled() != null) {
+			entity.setEnabled(domain.getEnabled());
+		}
+		entity.setUpdated(new Date());
 		entity = repository.save(entity);
 		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}

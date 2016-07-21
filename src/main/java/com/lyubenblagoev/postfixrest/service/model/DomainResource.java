@@ -9,7 +9,7 @@ public class DomainResource {
 	private Long id;
 	private Date created;
 	private Date updated;
-	private boolean enabled;
+	private Boolean enabled;
 	
 	@NotBlank
 	private String name;
@@ -62,11 +62,11 @@ public class DomainResource {
 		this.updated = updated;
 	}
 
-	public boolean isEnabled() {
+	public Boolean getEnabled() {
 		return enabled;
 	}
 
-	public void setEnabled(boolean enabled) {
+	public void setEnabled(Boolean enabled) {
 		this.enabled = enabled;
 	}
 

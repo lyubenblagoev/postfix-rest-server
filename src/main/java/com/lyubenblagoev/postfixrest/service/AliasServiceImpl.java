@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -60,6 +61,10 @@ public class AliasServiceImpl implements AliasService {
 		}
 		entity.setAlias(alias.getAlias());
 		entity.setEmail(alias.getEmail());
+		entity.setUpdated(new Date());
+		if (alias.getEnabled() != null) {
+			entity.setEnabled(alias.getEnabled());
+		}
 		entity = repository.save(entity);
 		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}

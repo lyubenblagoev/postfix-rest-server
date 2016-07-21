@@ -1,5 +1,7 @@
 package com.lyubenblagoev.postfixrest.service;
 
+import java.util.Date;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.lyubenblagoev.postfixrest.entity.Account;
@@ -49,6 +51,7 @@ public abstract class AbstractBccServiceImpl implements BccService {
 		entity.setAccount(account);
 		entity.setReceiverEmailAddress(resource.getEmail());
 		entity.setEnabled(resource.isEnabled());
+		entity.setUpdated(new Date());
 		return entity;
 	}
 

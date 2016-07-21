@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.codec.digest.Crypt;
@@ -70,6 +71,10 @@ public class AccountServiceImpl implements AccountService {
 				&& account.getPassword().equals(account.getConfirmPassword())) {
 			entity.setPassword(Crypt.crypt(account.getPassword()));
 		}
+		if (account.getEnabled() != null) {
+			entity.setEnabled(account.getEnabled());
+		}
+		entity.setUpdated(new Date());
 		entity = repository.save(entity);
 		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), 
 				entity.getDomain().getId(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());

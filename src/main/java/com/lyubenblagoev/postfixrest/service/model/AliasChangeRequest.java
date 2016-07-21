@@ -9,6 +9,7 @@ public class AliasChangeRequest {
 	private Long domainId;
 	@NotBlank private String alias;
 	@Email @NotBlank private String email;
+	private Boolean enabled;
 	
 	public Long getId() {
 		return id;
@@ -40,6 +41,14 @@ public class AliasChangeRequest {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public Boolean getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(Boolean enabled) {
+		this.enabled = enabled;
 	}
 
 }
