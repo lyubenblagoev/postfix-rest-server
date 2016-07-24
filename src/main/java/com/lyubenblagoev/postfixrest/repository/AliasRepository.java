@@ -9,7 +9,9 @@ import com.lyubenblagoev.postfixrest.entity.Alias;
 public interface AliasRepository extends CrudRepository<Alias, Long> {
 
 	List<Alias> findByDomainId(Long domainId);
+
+	List<Alias> findByDomainName(String domainName);
 	
-	Alias findByDomainIdAndAlias(Long domainId, String alias);
+	Alias findByDomainNameAndAlias(String domainName, String alias);
 
 }

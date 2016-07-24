@@ -28,15 +28,6 @@ public class DomainServiceImpl implements DomainService {
 	}
 
 	@Override
-	public DomainResource getDomain(Long id) {
-		Domain entity = repository.findOne(id);
-		if (entity == null) {
-			throw new DomainNotFoundException("no domain with id " + id);
-		}
-		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
-	}
-
-	@Override
 	public DomainResource getDomainByName(String name) {
 		Domain entity = repository.findByName(name);
 		if (entity == null) {
@@ -51,11 +42,10 @@ public class DomainServiceImpl implements DomainService {
 		if (domain.getId() == null && repository.findByName(domain.getName()) != null) {
 			throw new DomainExistsException("domain with that name already exist: " + domain.getName());
 		}
-
 		Domain entity = domain.getId() != null ? repository.findOne(domain.getId()) : new Domain();
 		entity.setName(domain.getName());
 		if (domain.getEnabled() != null) {
-			entity.setEnabled(domain.getEnabled());
+			entity.setEnabled(domain.getEnabled()); 
 		}
 		entity.setUpdated(new Date());
 		entity = repository.save(entity);
@@ -64,11 +54,12 @@ public class DomainServiceImpl implements DomainService {
 
 	@Override
 	@Transactional
-	public void delete(Long id) {
-		if (!repository.exists(id)) {
-			throw new DomainNotFoundException("no domain with id " + id);
+	public void delete(String name) {
+		Domain domain = repository.findByName(name);
+		if (domain == null) {
+			throw new DomainNotFoundException("domain not found: " + name);
 		}
-		repository.delete(id);
+		repository.delete(domain);
 	}
 
 }

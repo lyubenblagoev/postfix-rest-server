@@ -15,11 +15,11 @@ public abstract class AbstractBccServiceImpl implements BccService {
 	@Autowired
 	private AccountRepository accountRepository;
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected BccResource getBccResource(Long id, BccRepository repo) {
-		Bcc entity = repo.findByAccountId(id);
+	@SuppressWarnings({ "rawtypes"})
+	protected BccResource getBccResource(String domain, String account, BccRepository repo) {
+		Bcc entity = repo.findByAccountDomainNameAndAccountUsername(domain, account);
 		if (entity == null) {
-			throw new BccNotFoundException("BCC for account with id " + id + " not found");
+			throw new BccNotFoundException("BCC for account " + account + ", domain " + domain + " not found");
 		}
 		return new BccResource(entity.getId(), entity.getAccount().getId(), entity.getReceiverEmailAddress(), 
 				entity.isEnabled(), entity.getCreated(), entity.getUpdated());

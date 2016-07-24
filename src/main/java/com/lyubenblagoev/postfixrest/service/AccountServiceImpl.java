@@ -22,18 +22,9 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Autowired
 	private AccountRepository repository;
-
+	
 	@Autowired
 	private DomainRepository domainRepository;
-
-	@Override
-	public List<AccountResource> getAllAccounts() {
-		Iterable<Account> entities = repository.findAll();
-		List<AccountResource> accounts = new ArrayList<>();
-		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), 
-				e.getDomain().getId(), e.isEnabled(), e.getCreated(), e.getUpdated())));
-		return accounts;
-	}
 
 	@Override
 	public AccountResource getAccountById(Long id) {
@@ -46,13 +37,23 @@ public class AccountServiceImpl implements AccountService {
 	}
 	
 	@Override
-	public List<AccountResource> getAccountsByDomainId(Long id) {
-		List<Account> entities = repository.findByDomainId(id);
+	public List<AccountResource> getAccountsByDomainName(String name) {
+		List<Account> entities = repository.findByDomainName(name);
 		List<AccountResource> accounts = new ArrayList<>(entities.size());
 		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), 
 				e.getDomain().getId(), e.isEnabled(), e.getCreated(), e.getUpdated())));
 		return accounts;
 	} 
+
+	@Override
+	public AccountResource getAccountByNameAndDomainName(String username, String domainName) {
+		Account account = repository.findByUsernameAndDomainName(username, domainName);
+		if (account == null) {
+			throw new AccountNotFoundException("account with username " + username + " and domain " + domainName + " not found");
+		}
+		return new AccountResource(account.getId(), account.getUsername(), account.getDomain().getName(), 
+				account.getDomain().getId(), account.isEnabled(), account.getCreated(), account.getUpdated());
+	}
 
 	@Override
 	@Transactional
@@ -63,12 +64,11 @@ public class AccountServiceImpl implements AccountService {
 			throw new DomainNotFoundException("domain with id " + account.getDomainId() + " not found");
 		}
 		entity.setDomain(domain);
-		if (account.getId() == null && repository.findByUsernameAndDomainId(account.getUsername(), account.getDomainId()) != null) {
+		if (account.getId() == null && repository.findByUsernameAndDomainName(account.getUsername(), domain.getName()) != null) {
 			throw new AccountExistsException("another account with that name already exists");
 		}
 		entity.setUsername(account.getUsername());
-		if (account.getPassword() != null && account.getConfirmPassword() != null
-				&& account.getPassword().equals(account.getConfirmPassword())) {
+		if (account.getPassword() != null && account.getConfirmPassword() != null && account.getPassword().equals(account.getConfirmPassword())) {
 			entity.setPassword(Crypt.crypt(account.getPassword()));
 		}
 		if (account.getEnabled() != null) {
@@ -82,11 +82,12 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Override
 	@Transactional
-	public void delete(Long id) {
-		if (!repository.exists(id)) {
-			throw new AccountNotFoundException("no account with id " + id);
+	public void delete(String username, String domainName) {
+		Account account = repository.findByUsernameAndDomainName(username, domainName);
+		if (account == null) {
+			throw new AccountNotFoundException("invalid account");
 		}
-		repository.delete(id);
+		repository.delete(account);
 	}
 
 }

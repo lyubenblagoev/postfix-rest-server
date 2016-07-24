@@ -59,37 +59,37 @@ Here's a short overview about the possible REST API calls:
 **Domains**
 
   * **GET** http://URL/api/v1/domains - get all domains
-  * **GET** http://URL/api/v1/domains/{id} - get domain with ID {id}
+  * **GET** http://URL/api/v1/domains/{domain} - get domain with the specified name
   * **POST** http://URL/api/v1/domains - create domain (params: name)
-  * **PUT** http://URL/api/v1/domains/{id} - update domain with ID {id} (params: name)
-  * **DELETE** http://URL/api/v1/domains/{id} - delete domain with ID {id}
+  * **PUT** http://URL/api/v1/domains/{domain} - update domain (params: name)
+  * **DELETE** http://URL/api/v1/domains/{domain} - delete domain with name {domain}
 
 **Accounts**
 
-  * **GET** http://URL/api/v1/domains/{domainId}/accounts - get all accounts for the specified domainId
-  * **GET** http://URL/api/v1/domains/{domaindId}/accounts/{id} - get the user with ID {id} for domain {domainId}
-  * **POST** http://URL/api/v1/domains/{domainId}/accounts/ - create a new account for domain {domainId} (params: username, password, confirmPassword)
-  * **PUT** http://URL/api/v1/domains/{domainId}/accounts/{id} - update account with ID {id} for domain {domainId} (params: username, password, confirmPassword)
-  * **DELETE** http://URL/api/v1/domains/{domainId}/accounts/{id} - delete account with id {id} for domain {domainId}
+  * **GET** http://URL/api/v1/domains/{domain}/accounts - get all accounts for the specified domain
+  * **GET** http://URL/api/v1/domains/{domain}/accounts/{username} - get the user with username {username} for domain {domain}
+  * **POST** http://URL/api/v1/domains/{domain}/accounts/ - create a new account for domain {domain} (params: username, password, confirmPassword)
+  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username} - update account with username {username} for domain {domain} (params: username, password, confirmPassword)
+  * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username} - delete account with username {username} for domain {domain}
 
 **Aliases**
 
-  * **GET** http://URL/api/v1/domains/{domainId}/aliases - get all aliases for the specified domainId
-  * **GET** http://URL/api/v1/domains/{domaindId}/aliases/{id} - get the alias with ID {id} for domain {domainId}
-  * **POST** http://URL/api/v1/domains/{domainId}/aliases/ - create a new alias for domain {domainId} (params: alias, email)
-  * **PUT** http://URL/api/v1/domains/{domainId}/aliases/{id} - update alias with ID {id} for domain {domainId} (params: alias, email)
-  * **DELETE** http://URL/api/v1/domains/{domainId}/aliases/{id} - delete alias with id {id} for domain {domainId}
+  * **GET** http://URL/api/v1/domains/{domain}/aliases - get all aliases for the specified domain
+  * **GET** http://URL/api/v1/domains/{domain}/aliases/{alias} - get the alias with ID {id} for domain {domain}
+  * **POST** http://URL/api/v1/domains/{domain}/aliases/ - create a new alias for domain {domain} (params: alias, email)
+  * **PUT** http://URL/api/v1/domains/{domain}/aliases/{alias} - update alias with name {alias} for domain {domain} (params: alias, email)
+  * **DELETE** http://URL/api/v1/domains/{domain}/aliases/{alias} - delete alias with alias {alias} for domain {domain}
 
 **BCCs**
 
-  * **GET** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming - get the automatic BCC address for all mail targeted to the specified account
-  * **GET** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing - get the automatic BCC address for all mail that is sent from the specified account
-  * **POST** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming - set automatic BCC address for all mail targeted to the specified account
-  * **POST** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing - set automatic BCC address for all mail that is sent from the specified account
-  * **PUT** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming/{bccId} - update the specified BCC address
-  * **PUT** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing/{bccId} - update the specified BCC address
-  * **DELETE** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/incomming/{bccId} - delete the incomming BCC address for the specified account
-  * **DELETE** http://URL/api/v1/domains/{domainId}/accounts/{accountId}/bccs/outgoing/{bccId} - delete the outgoing BCC address for the specified account
+  * **GET** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - get the automatic BCC address for all mail targeted to the specified account
+  * **GET** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - get the automatic BCC address for all mail that is sent from the specified account
+  * **POST** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - set automatic BCC address for all mail targeted to the specified account
+  * **POST** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - set automatic BCC address for all mail that is sent from the specified account
+  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - update the incomming auto bcc address for the spcified account
+  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - update the outgoing auto bcc address for the spcified account
+  * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - delete the incomming BCC address for the specified account
+  * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - delete the outgoing BCC address for the specified account
 
 ## Bug reports 
 

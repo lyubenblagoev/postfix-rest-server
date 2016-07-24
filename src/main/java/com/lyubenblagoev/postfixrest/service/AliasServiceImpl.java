@@ -36,8 +36,8 @@ public class AliasServiceImpl implements AliasService {
 	}
 
 	@Override
-	public List<AliasResource> getAliasesForDomain(Long domainId) {
-		List<Alias> entities = repository.findByDomainId(domainId);
+	public List<AliasResource> getAliasesByDomainName(String domainName) {
+		List<Alias> entities = repository.findByDomainName(domainName);
 		if (entities.size() > 0) {
 			List<AliasResource> result = entities.stream().map(e -> {
 				return new AliasResource(e.getId(), e.getAlias(), e.getEmail(), e.isEnabled(), e.getCreated(), e.getUpdated());
@@ -45,6 +45,15 @@ public class AliasServiceImpl implements AliasService {
 			return result;
 		}
 		return new ArrayList<>(0);
+	}
+	
+	@Override
+	public AliasResource getAliasByDomainNameAndAlias(String domainName, String alias) {
+		Alias entity = repository.findByDomainNameAndAlias(domainName, alias);
+		if (entity == null) {
+			throw new AliasNotFoundException("alias " + alias + " doesn't exist for domain " + domainName);
+		}
+		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 
 	@Override
@@ -56,7 +65,7 @@ public class AliasServiceImpl implements AliasService {
 			throw new DomainNotFoundException("domain with id " + alias.getDomainId() + " not found");
 		}
 		entity.setDomain(domain);
-		if (alias.getId() == null && repository.findByDomainIdAndAlias(alias.getDomainId(), alias.getAlias()) != null) {
+		if (alias.getId() == null && repository.findByDomainNameAndAlias(domain.getName(), alias.getAlias()) != null) {
 			throw new AliasExistsException("alias exists");
 		}
 		entity.setAlias(alias.getAlias());
@@ -71,11 +80,12 @@ public class AliasServiceImpl implements AliasService {
 	
 	@Override
 	@Transactional
-	public void delete(Long aliasId) {
-		if (!repository.exists(aliasId)) {
-			throw new AliasNotFoundException("alias with id " + aliasId + " not found");
+	public void delete(String domain, String alias) {
+		Alias existingAlias = repository.findByDomainNameAndAlias(domain, alias);
+		if (existingAlias == null) {
+			throw new AliasNotFoundException("alias " + alias + " doesn't exist for domain " + domain);
 		}
-		repository.delete(aliasId);
+		repository.delete(existingAlias);
 	}
 
 }

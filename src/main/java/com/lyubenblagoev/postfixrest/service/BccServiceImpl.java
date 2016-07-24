@@ -26,24 +26,26 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 	private AccountRepository accountRepository;
 
 	@Override
-	public BccResource getOutgoingBcc(Long id) {
-		return getBccResource(id, outBccRepository);
+	public BccResource getOutgoingBcc(String domain, String username) {
+		return getBccResource(domain, username, outBccRepository);
 	}
 
 	@Override
-	public BccResource getIncommingBcc(Long id) {
-		return getBccResource(id, inBccRepository);
+	public BccResource getIncommingBcc(String domain, String username) {
+		return getBccResource(domain, username, inBccRepository);
 	}
 
 	@Override
 	@Transactional
 	public BccResource saveOutgoingBcc(BccResource resource) {
 		validateAccount(resource.getAccountId());
+
 		OutgoingBcc entity = outBccRepository.findByAccountId(resource.getAccountId());
 		if (entity == null) {
 			entity = new OutgoingBcc();
 		}
 		entity = (OutgoingBcc) save(entity, resource, outBccRepository);
+
 		return new BccResource(entity.getId(), entity.getAccount().getId(), entity.getReceiverEmailAddress(),
 				entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
@@ -52,11 +54,13 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 	@Transactional
 	public BccResource saveIncommingBcc(BccResource resource) {
 		validateAccount(resource.getAccountId());
+
 		IncommingBcc entity = inBccRepository.findByAccountId(resource.getAccountId());
 		if (entity == null) {
 			entity = new IncommingBcc();
 		}
 		entity = (IncommingBcc) save(entity, resource, inBccRepository);
+
 		return new BccResource(entity.getId(), entity.getAccount().getId(), entity.getReceiverEmailAddress(),
 				entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
@@ -70,20 +74,22 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 	
 	@Override
 	@Transactional
-	public void deleteIncommingBcc(Long id) {
-		if (inBccRepository.findOne(id) == null) {
-			throw new BccNotFoundException("BCC with id " + id + " not found");
+	public void deleteIncommingBcc(String domain, String username) {
+		IncommingBcc existingBcc = inBccRepository.findByAccountDomainNameAndAccountUsername(domain, username);
+		if (existingBcc == null) {
+			throw new BccNotFoundException("invalid BCC entry");
 		}
-		inBccRepository.delete(id);
+		inBccRepository.delete(existingBcc);
 	}
 
 	@Override
 	@Transactional
-	public void deleteOutgoingBcc(Long id) {
-		if (outBccRepository.findOne(id) == null) {
-			throw new BccNotFoundException("BCC with id " + id + " not found");
+	public void deleteOutgoingBcc(String domain, String username) {
+		OutgoingBcc existingBcc = outBccRepository.findByAccountDomainNameAndAccountUsername(domain, username);
+		if (existingBcc == null) {
+			throw new BccNotFoundException("invalid BCC entry");
 		}
-		outBccRepository.delete(id);
+		outBccRepository.delete(existingBcc);
 	}
 	
 }

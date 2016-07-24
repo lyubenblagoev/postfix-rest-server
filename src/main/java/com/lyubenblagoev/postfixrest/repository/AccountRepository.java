@@ -8,8 +8,8 @@ import com.lyubenblagoev.postfixrest.entity.Account;
 
 public interface AccountRepository extends CrudRepository<Account, Long> {
 
-	List<Account> findByDomainId(Long domainId);
+	List<Account> findByDomainName(String name);
 
-	Account findByUsernameAndDomainId(String username, Long domainId);
+	Account findByUsernameAndDomainName(String username, String domainName);
 
 }

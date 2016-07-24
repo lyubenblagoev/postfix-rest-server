@@ -9,85 +9,118 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lyubenblagoev.postfixrest.service.AccountService;
 import com.lyubenblagoev.postfixrest.service.BadRequestException;
 import com.lyubenblagoev.postfixrest.service.BccService;
+import com.lyubenblagoev.postfixrest.service.model.AccountResource;
 import com.lyubenblagoev.postfixrest.service.model.BccResource;
 
 @RestController
-@RequestMapping("/api/v1/domains/{domainId}/accounts/{accountId}/bccs")
+@RequestMapping("/api/v1/domains/{domain}/accounts/{account}/bccs")
 public class BccController {
 
 	@Autowired
 	private BccService service;
-
+	
+	@Autowired
+	private AccountService accountService;
+	
 	@RequestMapping(value = "/outgoing", method = RequestMethod.GET)
-	public BccResource getOutgoingBcc(@PathVariable("accountId") Long accountId) {
-		return service.getOutgoingBcc(accountId);
+	public BccResource getOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
+		return service.getOutgoingBcc(domain, account);
 	}
 
 	@RequestMapping(value = "/incomming", method = RequestMethod.GET)
-	public BccResource getIncommingBcc(@PathVariable("accountId") Long accountId) {
-		return service.getIncommingBcc(accountId);
+	public BccResource getIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
+		return service.getIncommingBcc(domain, account);
 	}
 
 	@RequestMapping(value = "/outgoing", method = RequestMethod.POST)
-	public void addOutgoingBcc(@PathVariable("accountId") Long accountId, @Validated @RequestBody BccResource bcc, BindingResult result) {
+	public void addOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
+			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
-		bcc.setAccountId(accountId);
+
+		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
+		bcc.setAccountId(accountResource.getId());
+
 		service.saveOutgoingBcc(bcc);
 	}
 
 	@RequestMapping(value = "/incomming", method = RequestMethod.POST)
-	public void addIncommingBcc(@PathVariable("accountId") Long accountId, @Validated @RequestBody BccResource bcc, BindingResult result) {
+	public void addIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
+			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
-		bcc.setAccountId(accountId);
+
+		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
+		bcc.setAccountId(accountResource.getId());
+
 		service.saveIncommingBcc(bcc);
 	}
 
-	@RequestMapping(value = "/outgoing/{id}", method = RequestMethod.PUT)
-	public void editOutgoingBcc(@PathVariable("accountId") Long accountId, @PathVariable("id") Long id,
+	@RequestMapping(value = "/outgoing", method = RequestMethod.PUT)
+	public void editOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
 			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
-		bcc.setAccountId(accountId);
-		bcc.setId(id);
+
+		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
+		bcc.setAccountId(accountResource.getId());
+
+		BccResource existingBcc = service.getOutgoingBcc(domain, account);
+		bcc.setId(existingBcc.getId());
+
 		service.saveOutgoingBcc(bcc);
 	}
 
-	@RequestMapping(value = "/incomming/{id}", method = RequestMethod.PUT)
-	public void editIncommingBcc(@PathVariable("accountId") Long accountId, @PathVariable("id") Long id,
+	@RequestMapping(value = "/incomming", method = RequestMethod.PUT)
+	public void editIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
 			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
-		bcc.setAccountId(accountId);
-		bcc.setId(id);
+
+		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
+		bcc.setAccountId(accountResource.getId());
+
+		BccResource existingBcc = service.getIncommingBcc(domain, account);
+		bcc.setId(existingBcc.getId());
+
 		service.saveIncommingBcc(bcc);
 	}
 
-	@RequestMapping(value = "/outgoing/{id}")
-	public void changeOutgoingBcc(@PathVariable("accountId") Long accountId, @PathVariable("id") Long id,
+	@RequestMapping(value = "/outgoing")
+	public void changeOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
 			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
-		bcc.setId(id);
-		bcc.setAccountId(accountId);
+
+		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
+		bcc.setAccountId(accountResource.getId());
+
+		BccResource existingBcc = service.getOutgoingBcc(domain, account);
+		bcc.setId(existingBcc.getId());
+
 		service.saveOutgoingBcc(bcc);
 	}
 
-	@RequestMapping(value = "/incomming/{id}")
-	public void changeIncommingBcc(@PathVariable("accountId") Long accountId, @PathVariable("id") Long id,
+	@RequestMapping(value = "/incomming")
+	public void changeIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
 			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
-		bcc.setId(id);
-		bcc.setAccountId(accountId);
+
+		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
+		bcc.setAccountId(accountResource.getId());
+
+		BccResource existingBcc = service.getIncommingBcc(domain, account);
+		bcc.setId(existingBcc.getId());
+
 		service.saveOutgoingBcc(bcc);
 	}
 
-	@RequestMapping(value = "/outgoing/{id}", method = RequestMethod.DELETE)
-	public void deleteOutgoingBcc(@PathVariable("id") Long id) {
-		service.deleteOutgoingBcc(id);
+	@RequestMapping(value = "/outgoing", method = RequestMethod.DELETE)
+	public void deleteOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
+		service.deleteOutgoingBcc(domain, account);
 	}
 
-	@RequestMapping(value = "/incomming/{id}", method = RequestMethod.DELETE)
-	public void deleteIncommingBcc(@PathVariable("id") Long id) {
-		service.deleteIncommingBcc(id);
+	@RequestMapping(value = "/incomming", method = RequestMethod.DELETE)
+	public void deleteIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
+		service.deleteIncommingBcc(domain, account);
 	}
 
 	private void checkForErrors(BindingResult result) {

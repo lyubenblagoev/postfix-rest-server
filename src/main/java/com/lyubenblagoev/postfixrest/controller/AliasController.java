@@ -11,51 +11,62 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.lyubenblagoev.postfixrest.service.AliasNotFoundException;
 import com.lyubenblagoev.postfixrest.service.AliasService;
 import com.lyubenblagoev.postfixrest.service.BadRequestException;
+import com.lyubenblagoev.postfixrest.service.DomainService;
 import com.lyubenblagoev.postfixrest.service.model.AliasChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.AliasResource;
+import com.lyubenblagoev.postfixrest.service.model.DomainResource;
 
 @RestController
-@RequestMapping("/api/v1/domains/{domainId}/aliases")
+@RequestMapping("/api/v1/domains/{domain}/aliases")
 public class AliasController {
 
 	@Autowired
 	private AliasService service;
+	
+	@Autowired
+	private DomainService domainService;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public List<AliasResource> getAliases(@PathVariable("domainId") Long domainId) {
-		return service.getAliasesForDomain(domainId);
+	public List<AliasResource> getAliases(@PathVariable("domain") String domain) {
+		return service.getAliasesByDomainName(domain);
 	}
 	
-	@RequestMapping(value = "/{aliasId}", method = RequestMethod.GET)
-	public AliasResource getAlias(@PathVariable("domainId") Long domainId, @PathVariable("aliasId") Long aliasId) {
-		return service.getAlias(aliasId);
+	@RequestMapping(value = "/{alias}", method = RequestMethod.GET)
+	public AliasResource getAlias(@PathVariable("domain") String domain, @PathVariable("alias") String alias) {
+		return service.getAliasByDomainNameAndAlias(domain, alias);
 	}
 
-	@RequestMapping(value = "/{aliasId}", method = RequestMethod.PUT)
-	public void edit(@PathVariable("domainId") Long domainId, @PathVariable("aliasId") Long aliasId, 
-			@Validated @RequestBody AliasChangeRequest alias, BindingResult result) {
-		alias.setId(aliasId);
-		saveAlias(domainId, alias, result);
+	@RequestMapping(value = "/{alias}", method = RequestMethod.PUT)
+	public void edit(@PathVariable("domain") String domain, @PathVariable("alias") String alias, 
+			@Validated @RequestBody AliasChangeRequest aliasRequest, BindingResult result) {
+		AliasResource existingAlias = service.getAliasByDomainNameAndAlias(domain, alias);
+		if (existingAlias == null) {
+			throw new AliasNotFoundException("alias " + alias + " for domain " + domain + " doesn't exist");
+		}
+		aliasRequest.setId(existingAlias.getId());
+		saveAlias(domain, aliasRequest, result);
 	}
 
-	@RequestMapping(value = "/{aliasId}", method = RequestMethod.DELETE)
-	public void delete(@PathVariable("domainId") Long domainId, @PathVariable("aliasId") Long aliasId) {
-		service.delete(aliasId);
+	@RequestMapping(value = "/{alias}", method = RequestMethod.DELETE)
+	public void delete(@PathVariable("domain") String domain, @PathVariable("alias") String alias) {
+		service.delete(domain, alias);
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
-	public void addAlias(@PathVariable("domainId") Long domainId, @Validated @RequestBody AliasChangeRequest alias, BindingResult result) {
-		saveAlias(domainId, alias, result);
+	public void addAlias(@PathVariable("domain") String domain, @Validated @RequestBody AliasChangeRequest alias, BindingResult result) {
+		saveAlias(domain, alias, result);
 	}
 
-	private void saveAlias(Long domainId, AliasChangeRequest alias, BindingResult result) {
+	private void saveAlias(String domain, AliasChangeRequest alias, BindingResult result) {
 		String error = result.hasErrors() ? result.getFieldError().toString() : null;
 		if (error != null) {
 			throw new BadRequestException(error);
 		}
-		alias.setDomainId(domainId);
+		DomainResource domainEntity = domainService.getDomainByName(domain);
+		alias.setDomainId(domainEntity.getId());
 		service.save(alias);
 	}
 

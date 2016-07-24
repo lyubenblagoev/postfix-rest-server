@@ -7,7 +7,8 @@ import com.lyubenblagoev.postfixrest.service.model.AliasResource;
 
 public interface AliasService {
 	AliasResource getAlias(Long id);
-	List<AliasResource> getAliasesForDomain(Long domainId);
+	List<AliasResource> getAliasesByDomainName(String domainName);
+	AliasResource getAliasByDomainNameAndAlias(String domainName, String alias);
 	AliasResource save(AliasChangeRequest alias);
-	void delete(Long id);
+	void delete(String alias, String domain);
 }
