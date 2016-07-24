@@ -75,7 +75,7 @@ Here's a short overview about the possible REST API calls:
 **Aliases**
 
   * **GET** http://URL/api/v1/domains/{domain}/aliases - get all aliases for the specified domain
-  * **GET** http://URL/api/v1/domains/{domain}/aliases/{alias} - get the alias with ID {id} for domain {domain}
+  * **GET** http://URL/api/v1/domains/{domain}/aliases/{alias} - get the {alias} alias for domain {domain}
   * **POST** http://URL/api/v1/domains/{domain}/aliases/ - create a new alias for domain {domain} (params: alias, email)
   * **PUT** http://URL/api/v1/domains/{domain}/aliases/{alias} - update alias with name {alias} for domain {domain} (params: alias, email)
   * **DELETE** http://URL/api/v1/domains/{domain}/aliases/{alias} - delete alias with alias {alias} for domain {domain}
