@@ -1,5 +1,6 @@
 package com.lyubenblagoev.postfixrest.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lyubenblagoev.postfixrest.FileUtils;
+import com.lyubenblagoev.postfixrest.configuration.MailServerConfiguration;
 import com.lyubenblagoev.postfixrest.entity.Account;
 import com.lyubenblagoev.postfixrest.entity.Domain;
 import com.lyubenblagoev.postfixrest.repository.AccountRepository;
@@ -25,6 +28,9 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Autowired
 	private DomainRepository domainRepository;
+	
+	@Autowired
+	private MailServerConfiguration mailServerConfiguration;
 
 	@Override
 	public AccountResource getAccountById(Long id) {
@@ -59,14 +65,22 @@ public class AccountServiceImpl implements AccountService {
 	@Transactional
 	public AccountResource save(AccountChangeRequest account) {
 		Account entity = account.getId() == null ? new Account() : repository.findOne(account.getId());
+
 		Domain domain = domainRepository.findOne(account.getDomainId());
 		if (domain == null) {
 			throw new DomainNotFoundException("domain with id " + account.getDomainId() + " not found");
 		}
 		entity.setDomain(domain);
+
 		if (account.getId() == null && repository.findByUsernameAndDomainName(account.getUsername(), domain.getName()) != null) {
 			throw new AccountExistsException("another account with that name already exists");
 		}
+		
+		if (account.getId() != null && !account.getUsername().equals(entity.getUsername())) { 
+			File domainFolder = new File(mailServerConfiguration.getVhostsPath(), entity.getDomain().getName());
+			FileUtils.renameFolder(domainFolder, entity.getUsername(), account.getUsername());
+		}
+
 		entity.setUsername(account.getUsername());
 		if (account.getPassword() != null && account.getConfirmPassword() != null && account.getPassword().equals(account.getConfirmPassword())) {
 			entity.setPassword(Crypt.crypt(account.getPassword()));
@@ -75,7 +89,9 @@ public class AccountServiceImpl implements AccountService {
 			entity.setEnabled(account.getEnabled());
 		}
 		entity.setUpdated(new Date());
+
 		entity = repository.save(entity);
+
 		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), 
 				entity.getDomain().getId(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}

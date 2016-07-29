@@ -1,5 +1,6 @@
 package com.lyubenblagoev.postfixrest.service;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -8,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lyubenblagoev.postfixrest.FileUtils;
+import com.lyubenblagoev.postfixrest.configuration.MailServerConfiguration;
 import com.lyubenblagoev.postfixrest.entity.Domain;
 import com.lyubenblagoev.postfixrest.repository.DomainRepository;
 import com.lyubenblagoev.postfixrest.service.model.DomainResource;
@@ -18,6 +21,9 @@ public class DomainServiceImpl implements DomainService {
 	
 	@Autowired
 	private DomainRepository repository;
+	
+	@Autowired
+	private MailServerConfiguration mailServerConfiguration;
 	
 	@Override
 	public List<DomainResource> getAllDomains() {
@@ -42,13 +48,21 @@ public class DomainServiceImpl implements DomainService {
 		if (domain.getId() == null && repository.findByName(domain.getName()) != null) {
 			throw new DomainExistsException("domain with that name already exist: " + domain.getName());
 		}
+
 		Domain entity = domain.getId() != null ? repository.findOne(domain.getId()) : new Domain();
+
+		if (domain.getId() != null && !entity.getName().equals(domain.getName())) {
+			FileUtils.renameFolder(new File(mailServerConfiguration.getVhostsPath()), entity.getName(), domain.getName());
+		}
+
 		entity.setName(domain.getName());
 		if (domain.getEnabled() != null) {
 			entity.setEnabled(domain.getEnabled()); 
 		}
 		entity.setUpdated(new Date());
+
 		entity = repository.save(entity);
+
 		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 
