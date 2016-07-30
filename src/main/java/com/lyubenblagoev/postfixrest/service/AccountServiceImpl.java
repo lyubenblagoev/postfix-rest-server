@@ -103,6 +103,8 @@ public class AccountServiceImpl implements AccountService {
 		if (account == null) {
 			throw new AccountNotFoundException("invalid account");
 		}
+		File domainDir = new File(mailServerConfiguration.getVhostsPath(), domainName);
+		FileUtils.deleteFolder(domainDir, username);
 		repository.delete(account);
 	}
 

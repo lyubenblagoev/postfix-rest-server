@@ -73,6 +73,7 @@ public class DomainServiceImpl implements DomainService {
 		if (domain == null) {
 			throw new DomainNotFoundException("domain not found: " + name);
 		}
+		FileUtils.deleteFolder(new File(mailServerConfiguration.getVhostsPath()), name);
 		repository.delete(domain);
 	}
 

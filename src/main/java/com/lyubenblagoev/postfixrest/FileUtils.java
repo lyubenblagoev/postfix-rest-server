@@ -9,5 +9,10 @@ public class FileUtils {
 		File newFolder = new File(parentFolder, newName);
 		return oldFolder.renameTo(newFolder);
 	}
+	
+	public static boolean deleteFolder(File parentFolder, String name) {
+		File folder = new File(parentFolder, name);
+		return folder.delete();
+	}
 
 }
