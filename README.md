@@ -52,6 +52,8 @@ SuccessExitStatus=0
 WantedBy=multi-user.target
 ```
 
+Note that when you rename or delete account or domain, the corresponding directory is also renamed or deleted. Ensure that the user that is used for running the server has write privileges on your mail vhosts directory and its subdirectories.
+
 ## Usage
 
 Here's a short overview about the possible REST API calls:
