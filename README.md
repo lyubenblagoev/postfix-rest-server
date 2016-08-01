@@ -24,7 +24,7 @@ When the project is built you'll find the project jar file in the `build/libs` d
 
 ## Configuration
 
-This is a Spring Boot project and to configure it for your system you need to place an `application.properties` file in the directory in which you install the application jar file.
+This is a Spring Boot project and to configure it for your system you need to place an `application.properties` file in the directory in which you install the application jar file. The application.properties file must include `mail-server.vhosts-path` key to specify the path to the virtual hosts folder for your mail server (the default is /var/mail/vhosts). Take a look at the src/main/resources/application.properties file for other default values.
 
 ## Running the application
 
