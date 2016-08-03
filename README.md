@@ -46,6 +46,7 @@ After=syslog.target
 [Service] 
 User=postfix-rest 
 ExecStart=/opt/postfix-rest-server/postfix-rest-server 
+WorkingDirectory=/opt/postfix-rest-server
 SuccessExitStatus=0
 
 [Install] 
