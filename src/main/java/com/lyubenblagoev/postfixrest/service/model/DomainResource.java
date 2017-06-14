@@ -4,11 +4,18 @@ import java.util.Date;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class DomainResource {
 
 	private Long id;
+	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date created;
+	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date updated;
+	
 	private Boolean enabled;
 	
 	@NotBlank

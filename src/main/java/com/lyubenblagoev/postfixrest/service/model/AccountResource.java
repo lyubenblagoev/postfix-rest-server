@@ -2,14 +2,24 @@ package com.lyubenblagoev.postfixrest.service.model;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class AccountResource {
 
 	private Long id;
+	
 	private String username;
+	
 	private String domain;
+	
 	private Long domainId;
+	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date created;
+	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date updated;
+	
 	private boolean enabled;
 	
 	public AccountResource() {

@@ -5,13 +5,21 @@ import java.util.Date;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public class BccResource {
 
 	private Long id;
+	
 	private Long accountId;
+	
 	@NotBlank @Email private String email;
 	private boolean enabled;
+	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date created;
+	
+	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date updated;
 	
 	public BccResource() {
