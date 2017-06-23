@@ -10,10 +10,10 @@ public class DomainResource {
 
 	private Long id;
 	
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ssZ")
 	private Date created;
 	
-	@JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ssZ")
 	private Date updated;
 	
 	private Boolean enabled;
