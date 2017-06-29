@@ -125,7 +125,7 @@ public class BccController {
 
 	private void checkForErrors(BindingResult result) {
 		if (result.hasErrors()) {
-			throw new BadRequestException(result.getFieldError().toString());
+			throw new BadRequestException(ControllerUtils.getError(result));
 		}
 	}
 

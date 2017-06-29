@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lyubenblagoev.postfixrest.service.BadRequestException;
-import com.lyubenblagoev.postfixrest.service.DomainNotFoundException;
 import com.lyubenblagoev.postfixrest.service.DomainService;
 import com.lyubenblagoev.postfixrest.service.model.DomainResource;
 
@@ -46,12 +45,9 @@ public class DomainController {
 	@RequestMapping(value = "/{name:.+}", method = RequestMethod.PUT)
 	public void edit(@PathVariable("name") String name, @Validated @RequestBody DomainResource domain, BindingResult result) {
 		if (result.hasErrors()) {
-			throw new BadRequestException(result.getFieldError().getDefaultMessage());
+			throw new BadRequestException(ControllerUtils.getError(result));
 		}
 		DomainResource existingDomain = domainService.getDomainByName(name);
-		if (existingDomain == null) { 
-			throw new DomainNotFoundException("can't update a domain that doesn't exist");
-		}
 		domain.setId(existingDomain.getId());
 		domainService.save(domain);
 	}

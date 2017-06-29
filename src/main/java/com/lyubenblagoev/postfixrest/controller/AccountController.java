@@ -34,8 +34,7 @@ public class AccountController {
 
 	@RequestMapping(method = RequestMethod.POST)
 	public void addAccount(@PathVariable("domain") String domainName, @Validated @RequestBody AccountChangeRequest account, BindingResult result) {
-		String error = result.hasErrors() ? result.getFieldError().toString() : null;
-		saveAccount(domainName, account, error);
+		saveAccount(domainName, account, ControllerUtils.getError(result));
 	}
 	
 	@RequestMapping(value = "/{account:.+}", method = RequestMethod.GET)
@@ -52,10 +51,9 @@ public class AccountController {
 	@RequestMapping(value = "/{account:.+}", method = RequestMethod.PUT)
 	public void edit(@PathVariable("domain") String domainName, @PathVariable("account") String account, 
 			@Validated @RequestBody AccountChangeRequest accountRequest, BindingResult result) {
-		String error = result.hasErrors() ? result.getFieldError().toString() : null;
 		AccountResource existingAccount = accountService.getAccountByNameAndDomainName(account, domainName);
 		accountRequest.setId(existingAccount.getId());
-		saveAccount(domainName, accountRequest, error);
+		saveAccount(domainName, accountRequest, ControllerUtils.getError(result));
 	}
 	
 	private void saveAccount(String domainName, AccountChangeRequest account, String error) {

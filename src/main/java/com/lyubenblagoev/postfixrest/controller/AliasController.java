@@ -61,9 +61,8 @@ public class AliasController {
 	}
 
 	private void saveAlias(String domain, AliasChangeRequest alias, BindingResult result) {
-		String error = result.hasErrors() ? result.getFieldError().toString() : null;
-		if (error != null) {
-			throw new BadRequestException(error);
+		if (result.hasErrors()) {
+			throw new BadRequestException(ControllerUtils.getError(result));
 		}
 		DomainResource domainEntity = domainService.getDomainByName(domain);
 		alias.setDomainId(domainEntity.getId());
