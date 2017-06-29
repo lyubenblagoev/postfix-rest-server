@@ -2,6 +2,9 @@ package com.lyubenblagoev.postfixrest.service.model;
 
 import org.hibernate.validator.constraints.NotBlank;
 
+import com.lyubenblagoev.postfixrest.service.model.validation.PasswordsMatches;
+
+@PasswordsMatches
 public class AccountChangeRequest {
 
 	private Long id;

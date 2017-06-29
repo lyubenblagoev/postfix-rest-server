@@ -60,9 +60,6 @@ public class AccountController {
 		if (error != null) {
 			throw new AccountException(error);
 		}
-		if (account.getPassword() != null && !account.getPassword().equals(account.getConfirmPassword())) {
-			throw new AccountException("passwords don't match");
-		}
 		DomainResource domain = domainService.getDomainByName(domainName);
 		account.setDomainId(domain.getId());
 		accountService.save(account);
