@@ -9,6 +9,9 @@ import com.lyubenblagoev.postfixrest.entity.Bcc;
 
 @NoRepositoryBean
 public interface BccRepository<T extends Bcc, ID extends Serializable> extends CrudRepository<T, ID> {
+	
 	T findByAccountId(ID id);
+
 	T findByAccountDomainNameAndAccountUsername(String domain, String username);
+	
 }
