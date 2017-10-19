@@ -7,7 +7,7 @@ public class AliasChangeRequest {
 	
 	private Long id;
 	private Long domainId;
-	@NotBlank private String alias;
+	@NotBlank private String name;
 	@Email @NotBlank private String email;
 	private Boolean enabled;
 	
@@ -19,12 +19,12 @@ public class AliasChangeRequest {
 		this.id = id;
 	}
 
-	public String getAlias() {
-		return alias;
+	public String getName() {
+		return name;
 	}
 
-	public void setAlias(String alias) {
-		this.alias = alias;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Long getDomainId() {

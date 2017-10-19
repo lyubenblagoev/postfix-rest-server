@@ -8,7 +8,7 @@ public class AliasResource {
 
 	private Long id;
 	
-	private String alias;
+	private String name;
 	
 	private String email;
 	
@@ -23,15 +23,15 @@ public class AliasResource {
 	public AliasResource() {
 	}
 
-	public AliasResource(Long id, String alias, String email) {
+	public AliasResource(Long id, String name, String email) {
 		this.id = id;
-		this.alias = alias;
+		this.name = name;
 		this.email = email;
 	}
 
-	public AliasResource(Long id, String alias, String email, boolean enabled, Date created, Date updated) {
+	public AliasResource(Long id, String name, String email, boolean enabled, Date created, Date updated) {
 		this.id = id;
-		this.alias = alias;
+		this.name = name;
 		this.email = email;
 		this.enabled = enabled;
 		this.created = created;
@@ -46,12 +46,12 @@ public class AliasResource {
 		this.id = id;
 	}
 
-	public String getAlias() {
-		return alias;
+	public String getName() {
+		return name;
 	}
 
-	public void setAlias(String alias) {
-		this.alias = alias;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getEmail() {

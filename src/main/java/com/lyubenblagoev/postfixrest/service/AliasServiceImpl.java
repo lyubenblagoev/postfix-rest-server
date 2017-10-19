@@ -1,8 +1,8 @@
 package com.lyubenblagoev.postfixrest.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,22 +36,32 @@ public class AliasServiceImpl implements AliasService {
 	}
 
 	@Override
-	public List<AliasResource> getAliasesByDomainName(String domainName) {
-		List<Alias> entities = repository.findByDomainName(domainName);
-		if (entities.size() > 0) {
-			List<AliasResource> result = entities.stream().map(e -> {
+	public Collection<AliasResource> getAliasesByDomainName(String domainName) {
+		Collection<Alias> entities = repository.findByDomainName(domainName);
+		if (!entities.isEmpty()) {
+			return entities.stream().map(e -> {
 				return new AliasResource(e.getId(), e.getAlias(), e.getEmail(), e.isEnabled(), e.getCreated(), e.getUpdated());
 			}).collect(Collectors.toList());
-			return result;
 		}
 		return new ArrayList<>(0);
 	}
 	
 	@Override
-	public AliasResource getAliasByDomainNameAndAlias(String domainName, String alias) {
-		Alias entity = repository.findByDomainNameAndAlias(domainName, alias);
+	public Collection<AliasResource> getAliasByDomainNameAndName(String domainName, String name) {
+		Collection<Alias> entities = repository.findByDomainNameAndAlias(domainName, name);
+		if (entities.isEmpty()) {
+			throw new AliasNotFoundException("alias " + name + " doesn't exist for domain " + domainName);
+		}
+		return entities.stream().map(e -> {
+			return new AliasResource(e.getId(), e.getAlias(), e.getEmail(), e.isEnabled(), e.getCreated(), e.getUpdated());
+		}).collect(Collectors.toList());
+	}
+	
+	@Override
+	public AliasResource getAliasByDomainNameAndNameAndEmail(String domainName, String name, String email) {
+		Alias entity = repository.findByDomainNameAndAliasAndEmail(domainName, name, email);
 		if (entity == null) {
-			throw new AliasNotFoundException("alias " + alias + " doesn't exist for domain " + domainName);
+			throw new AliasNotFoundException("Alias " + name + " and email recipient " + email + " doesn't exist for domain " + domainName);
 		}
 		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
@@ -65,10 +75,10 @@ public class AliasServiceImpl implements AliasService {
 			throw new DomainNotFoundException("domain with id " + alias.getDomainId() + " not found");
 		}
 		entity.setDomain(domain);
-		if (alias.getId() == null && repository.findByDomainNameAndAlias(domain.getName(), alias.getAlias()) != null) {
+		if (alias.getId() == null && repository.findByDomainNameAndAliasAndEmail(domain.getName(), alias.getName(), alias.getEmail()) != null) {
 			throw new AliasExistsException("alias exists");
 		}
-		entity.setAlias(alias.getAlias());
+		entity.setAlias(alias.getName());
 		entity.setEmail(alias.getEmail());
 		entity.setUpdated(new Date());
 		if (alias.getEnabled() != null) {
@@ -80,12 +90,22 @@ public class AliasServiceImpl implements AliasService {
 	
 	@Override
 	@Transactional
-	public void delete(String domain, String alias) {
-		Alias existingAlias = repository.findByDomainNameAndAlias(domain, alias);
+	public void delete(String domain, String name, String email) {
+		Alias existingAlias = repository.findByDomainNameAndAliasAndEmail(domain, name, email);
 		if (existingAlias == null) {
-			throw new AliasNotFoundException("alias " + alias + " doesn't exist for domain " + domain);
+			throw new AliasNotFoundException("alias " + name + " with email recipient " + email + " doesn't exist for domain " + domain);
 		}
 		repository.delete(existingAlias);
+	}
+	
+	@Override
+	@Transactional
+	public void delete(String domain, String name) {
+		Collection<Alias> existingAliases = repository.findByDomainNameAndAlias(domain, name);
+		if (existingAliases.isEmpty()) {
+			throw new AliasNotFoundException("alias " + name + " doesn't exist for domain " + domain);
+		}
+		existingAliases.forEach(repository::delete);
 	}
 
 }

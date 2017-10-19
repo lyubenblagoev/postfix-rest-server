@@ -1,6 +1,6 @@
 package com.lyubenblagoev.postfixrest.repository;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -8,10 +8,12 @@ import com.lyubenblagoev.postfixrest.entity.Alias;
 
 public interface AliasRepository extends CrudRepository<Alias, Long> {
 
-	List<Alias> findByDomainId(Long domainId);
+	Collection<Alias> findByDomainId(Long domainId);
 
-	List<Alias> findByDomainName(String domainName);
+	Collection<Alias> findByDomainName(String domainName);
 	
-	Alias findByDomainNameAndAlias(String domainName, String alias);
+	Collection<Alias> findByDomainNameAndAlias(String domainName, String alias);
+	
+	Alias findByDomainNameAndAliasAndEmail(String domainName, String alias, String email);
 
 }

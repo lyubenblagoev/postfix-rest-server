@@ -30,7 +30,7 @@ This is a Spring Boot project and to configure it for your system you need to pl
 
 The application can be run as any other jar file: 
 
-    $ java -jar postfix-rest-server-0.0.1-SNAPSHOT.jar
+    $ java -jar postfix-rest-server-0.1.0-SNAPSHOT.jar
 
 Out of the box it will run with MySQL database but if you want to use it with different database like PostgreSQL you need to add the appropriate JDBC driver jar file to the classpath when running the application.
 
@@ -78,10 +78,12 @@ Here's a short overview about the possible REST API calls:
 **Aliases**
 
   * **GET** http://URL/api/v1/domains/{domain}/aliases - get all aliases for the specified domain
-  * **GET** http://URL/api/v1/domains/{domain}/aliases/{alias} - get the {alias} alias for domain {domain}
+  * **GET** http://URL/api/v1/domains/{domain}/aliases/{name} - get all aliases for domain {domain} and name {name}
+  * **GET** http://URL/api/v1/domains/{domain}/aliases/{name}/{email} - get the alias {alias} in domain {domain} and recipient {email} 
   * **POST** http://URL/api/v1/domains/{domain}/aliases/ - create a new alias for domain {domain} (params: alias, email)
-  * **PUT** http://URL/api/v1/domains/{domain}/aliases/{alias} - update alias with name {alias} for domain {domain} (params: alias, email)
-  * **DELETE** http://URL/api/v1/domains/{domain}/aliases/{alias} - delete alias with alias {alias} for domain {domain}
+  * **PUT** http://URL/api/v1/domains/{domain}/aliases/{name}/{email} - update alias with name {alias} in domain {domain} and recipient {email} (params: name, email)
+  * **DELETE** http://URL/api/v1/domains/{domain}/aliases/{name} - delete all aliases with name {name} in domain {domain}
+  * **DELETE** http://URL/api/v1/domains/{domain}/aliases/{name}/{email} - delete alias with alias {alias} in domain {domain} and recipient {email}
 
 **BCCs**
 

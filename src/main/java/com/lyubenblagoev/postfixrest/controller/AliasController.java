@@ -1,6 +1,6 @@
 package com.lyubenblagoev.postfixrest.controller;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -30,29 +30,39 @@ public class AliasController {
 	private DomainService domainService;
 
 	@RequestMapping(method = RequestMethod.GET)
-	public List<AliasResource> getAliases(@PathVariable("domain") String domain) {
+	public Collection<AliasResource> getAliases(@PathVariable("domain") String domain) {
 		return service.getAliasesByDomainName(domain);
 	}
 	
-	@RequestMapping(value = "/{alias}", method = RequestMethod.GET)
-	public AliasResource getAlias(@PathVariable("domain") String domain, @PathVariable("alias") String alias) {
-		return service.getAliasByDomainNameAndAlias(domain, alias);
+	@RequestMapping(value = "/{name}", method = RequestMethod.GET)
+	public Collection<AliasResource> getAliases(@PathVariable("domain") String domain, @PathVariable("name") String name) {
+		return service.getAliasByDomainNameAndName(domain, name);
+	}
+	
+	@RequestMapping(value = "/{name}/{email:.+}", method = RequestMethod.GET)
+	public AliasResource getAlias(@PathVariable("domain") String domain, @PathVariable("name") String name, @PathVariable("email") String email) {
+		return service.getAliasByDomainNameAndNameAndEmail(domain, name, email);
 	}
 
-	@RequestMapping(value = "/{alias}", method = RequestMethod.PUT)
-	public void edit(@PathVariable("domain") String domain, @PathVariable("alias") String alias, 
+	@RequestMapping(value = "/{name}/{email:.+}", method = RequestMethod.PUT)
+	public void edit(@PathVariable("domain") String domain, @PathVariable("name") String name, @PathVariable("email") String email, 
 			@Validated @RequestBody AliasChangeRequest aliasRequest, BindingResult result) {
-		AliasResource existingAlias = service.getAliasByDomainNameAndAlias(domain, alias);
+		AliasResource existingAlias = service.getAliasByDomainNameAndNameAndEmail(domain, name, email);
 		if (existingAlias == null) {
-			throw new AliasNotFoundException("alias " + alias + " for domain " + domain + " doesn't exist");
+			throw new AliasNotFoundException("alias " + name + " for domain " + domain + " doesn't exist");
 		}
 		aliasRequest.setId(existingAlias.getId());
 		saveAlias(domain, aliasRequest, result);
 	}
 
-	@RequestMapping(value = "/{alias}", method = RequestMethod.DELETE)
-	public void delete(@PathVariable("domain") String domain, @PathVariable("alias") String alias) {
-		service.delete(domain, alias);
+	@RequestMapping(value = "/{name}", method = RequestMethod.DELETE)
+	public void delete(@PathVariable("domain") String domain, @PathVariable("name") String name) {
+		service.delete(domain, name);
+	}
+	
+	@RequestMapping(value = "/{name}/{email:.+}", method = RequestMethod.DELETE)
+	public void delete(@PathVariable("domain") String domain, @PathVariable("name") String name, @PathVariable("email") String email) {
+		service.delete(domain, name, email);
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
