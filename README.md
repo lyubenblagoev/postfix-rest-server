@@ -91,8 +91,8 @@ Here's a short overview about the possible REST API calls:
   * **GET** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - get the automatic BCC address for all mail that is sent from the specified account
   * **POST** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - set automatic BCC address for all mail targeted to the specified account
   * **POST** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - set automatic BCC address for all mail that is sent from the specified account
-  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - update the incomming auto bcc address for the spcified account
-  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - update the outgoing auto bcc address for the spcified account
+  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - update the incomming auto bcc address for the specified account
+  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - update the outgoing auto bcc address for the specified account
   * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - delete the incomming BCC address for the specified account
   * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - delete the outgoing BCC address for the specified account
 
