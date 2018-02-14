@@ -67,6 +67,9 @@ public class BccController {
 
 		BccResource existingBcc = service.getOutgoingBcc(domain, account);
 		bcc.setId(existingBcc.getId());
+		if (bcc.getEmail() == null) {
+			bcc.setEmail(existingBcc.getEmail());
+		}
 
 		service.saveOutgoingBcc(bcc);
 	}
@@ -81,6 +84,9 @@ public class BccController {
 
 		BccResource existingBcc = service.getIncommingBcc(domain, account);
 		bcc.setId(existingBcc.getId());
+		if (bcc.getEmail() == null) {
+			bcc.setEmail(existingBcc.getEmail());
+		}
 
 		service.saveIncommingBcc(bcc);
 	}

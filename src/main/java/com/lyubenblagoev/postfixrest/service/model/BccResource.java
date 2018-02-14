@@ -3,7 +3,6 @@ package com.lyubenblagoev.postfixrest.service.model;
 import java.util.Date;
 
 import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -13,7 +12,7 @@ public class BccResource {
 	
 	private Long accountId;
 	
-	@NotBlank @Email private String email;
+	@Email private String email;
 	private boolean enabled;
 	
 	@JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ssZ")
