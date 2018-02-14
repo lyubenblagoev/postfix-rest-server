@@ -91,34 +91,6 @@ public class BccController {
 		service.saveIncommingBcc(bcc);
 	}
 
-	@RequestMapping(value = "/outgoing")
-	public void changeOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
-			@Validated @RequestBody BccResource bcc, BindingResult result) {
-		checkForErrors(result);
-
-		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
-		bcc.setAccountId(accountResource.getId());
-
-		BccResource existingBcc = service.getOutgoingBcc(domain, account);
-		bcc.setId(existingBcc.getId());
-
-		service.saveOutgoingBcc(bcc);
-	}
-
-	@RequestMapping(value = "/incomming")
-	public void changeIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
-			@Validated @RequestBody BccResource bcc, BindingResult result) {
-		checkForErrors(result);
-
-		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
-		bcc.setAccountId(accountResource.getId());
-
-		BccResource existingBcc = service.getIncommingBcc(domain, account);
-		bcc.setId(existingBcc.getId());
-
-		service.saveOutgoingBcc(bcc);
-	}
-
 	@RequestMapping(value = "/outgoing", method = RequestMethod.DELETE)
 	public void deleteOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
 		service.deleteOutgoingBcc(domain, account);
