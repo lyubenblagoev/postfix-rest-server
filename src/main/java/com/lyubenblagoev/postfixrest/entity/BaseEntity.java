@@ -6,9 +6,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @MappedSuperclass
 public class BaseEntity {
@@ -19,11 +20,21 @@ public class BaseEntity {
 
 	private boolean enabled;
 	
-	@CreatedDate
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date created;
 	
-	@LastModifiedDate
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date updated;
+
+	@PrePersist
+	public void onPrePersist() {
+		this.created = new Date();
+	}
+
+	@PreUpdate
+	public void onPreUpdate() {
+		this.updated = new Date();
+	}
 
 	public Long getId() {
 		return id;
