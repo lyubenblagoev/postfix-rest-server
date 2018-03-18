@@ -1,6 +1,6 @@
 # REST server for Postfix
 
-REST server for the Postfix mail server configured with a database backend. Provides a REST endpoints for administering different aspects of your mail server like virtual domains, users, aliases, sender and recever BCCs, etc.
+REST API for the Postfix mail server. Uses virtual domains configuration with database beckend (using the database schema provided in the [postfix-database](https://github.com/lyubenblagoev/postfix-database) project. Provides a REST endpoints for administering different aspects of your mail server: virtual domains, users, aliases, automatic sender and recever BCC.
 
 Implemented in Java using Spring Boot().
 
@@ -32,7 +32,9 @@ The application can be run as any other jar file:
 
     $ java -jar postfix-rest-server-0.1.0-SNAPSHOT.jar
 
-The jar file contains jdbc drivers and will work with PostgreSQL and MySQL database but if you want to use it with different database you need to add the appropriate JDBC driver jar file to the classpath when running the application.
+The jar file contains jdbc drivers for PostgreSQL and MySQL. To use it with different database management system you need to add the appropriate JDBC driver jar file to the classpath when running the application.
+
+As already mentioned you need to configure the appropriate driver name, connection string, username and password in the `application.properties` file.
 
 To run the application as a service you need to create a service file in your `/etc/systemd/system` directory. 
 
@@ -95,6 +97,8 @@ Here's a short overview about the possible REST API calls:
   * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - update the outgoing auto bcc address for the specified account
   * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incomming - delete the incomming BCC address for the specified account
   * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - delete the outgoing BCC address for the specified account
+
+[emailctl](https://github.com/lyubenblagoev/emailctl) is a CLI (command line interface) for the Postfix REST Server. It supports all APIs and allows server management through the command line.
 
 ## Bug reports 
 
