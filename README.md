@@ -2,17 +2,17 @@
 
 REST server for the Postfix mail server configured with a database backend. Provides a REST endpoints for administering different aspects of your mail server like virtual domains, users, aliases, sender and recever BCCs, etc.
 
-Implemented in Java using Spring Boot.
+Implemented in Java using Spring Boot().
 
 ## Requirements
 
 You need Java 8 installed on the server. For building the project you need [Gradle](https://gradle.org), as described in the following section.
 
-Out of the box it works with MySQL based databases, but can also be used with other databases for which a suitable JDBC driver exist.
+Out of the box it works with [PostgreSQL](https://www.postgresql.org) and [MySQL](https://www.mysql.com) based databases, but can also be used with other databases for which a suitable JDBC driver exist.
 
 The Postfix REST Server uses the database schema provided in my [postfix-database](https://github.com/lyubenblagoev/postfix-database) project.
 
-Tested with Java 8 and MariaDB 10.1.14.
+Tested with Java 8, PostgreSQL 10.2 and MariaDB 10.1.14.
 
 ## Building the application
 
@@ -32,7 +32,7 @@ The application can be run as any other jar file:
 
     $ java -jar postfix-rest-server-0.1.0-SNAPSHOT.jar
 
-Out of the box it will run with MySQL database but if you want to use it with different database like PostgreSQL you need to add the appropriate JDBC driver jar file to the classpath when running the application.
+The jar file contains jdbc drivers and will work with PostgreSQL and MySQL database but if you want to use it with different database you need to add the appropriate JDBC driver jar file to the classpath when running the application.
 
 To run the application as a service you need to create a service file in your `/etc/systemd/system` directory. 
 
