@@ -34,7 +34,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public AccountResource getAccountById(Long id) {
-		Account entity = repository.findOne(id);
+		Account entity = repository.findById(id).orElse(null);
 		if (entity == null) {
 			throw new AccountNotFoundException("no account with id " + id);
 		}
@@ -64,9 +64,9 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public AccountResource save(AccountChangeRequest account) {
-		Account entity = account.getId() == null ? new Account() : repository.findOne(account.getId());
+		Account entity = account.getId() == null ? new Account() : repository.findById(account.getId()).get();
 
-		Domain domain = domainRepository.findOne(account.getDomainId());
+		Domain domain = domainRepository.findById(account.getDomainId()).orElse(null);
 		if (domain == null) {
 			throw new DomainNotFoundException("domain with id " + account.getDomainId() + " not found");
 		}

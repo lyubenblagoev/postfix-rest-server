@@ -2,7 +2,8 @@ package com.lyubenblagoev.postfixrest.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,7 +15,7 @@ import com.lyubenblagoev.postfixrest.service.NotFoundException;
 @ControllerAdvice
 public class ExceptionHandlerAdvice {
 	
-	private static final Logger log = Logger.getLogger(ExceptionHandlerAdvice.class);
+	private static final Logger log = LoggerFactory.getLogger(ExceptionHandlerAdvice.class); 
 
 	@ExceptionHandler(NotFoundException.class)
 	private ResponseEntity<ErrorInfo> notFoundHandler(HttpServletRequest request, Exception exception) {

@@ -48,8 +48,8 @@ public class DomainServiceImpl implements DomainService {
 		if (domain.getId() == null && repository.findByName(domain.getName()) != null) {
 			throw new DomainExistsException("domain with that name already exist: " + domain.getName());
 		}
-
-		Domain entity = domain.getId() != null ? repository.findOne(domain.getId()) : new Domain();
+		
+		Domain entity = domain.getId() == null ? new Domain() : repository.findById(domain.getId()).get();
 
 		if (domain.getId() != null && !entity.getName().equals(domain.getName())) {
 			FileUtils.renameFolder(new File(mailServerConfiguration.getVhostsPath()), entity.getName(), domain.getName());

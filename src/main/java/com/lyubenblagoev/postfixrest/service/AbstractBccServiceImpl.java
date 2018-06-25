@@ -30,7 +30,7 @@ public abstract class AbstractBccServiceImpl implements BccService {
 		if (resource.getId() == null && repository.findByAccountId(resource.getAccountId()) != null) {
 			// POST request, do not allow users to create more than one record for each account
 			throw new BadRequestException("cannot create more than one BCC address for an account");
-		} else if (resource.getId() != null && repository.findOne(resource.getId()) == null) {
+		} else if (resource.getId() != null && !repository.findById(resource.getId()).isPresent()) {
 			throw new BadRequestException("cannot update non-existing BCC record");
 		}
 		return saveResource(resource, entity, repository);
@@ -44,7 +44,7 @@ public abstract class AbstractBccServiceImpl implements BccService {
 	}
 	
 	protected Bcc validateAndCopyProps(Bcc entity, BccResource resource) {
-		Account account = accountRepository.findOne(resource.getAccountId());
+		Account account = accountRepository.findById(resource.getAccountId()).orElse(null);
 		if (account == null) {
 			throw new BadRequestException("account with id " + resource.getAccountId() + " not found");
 		}

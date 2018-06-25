@@ -2,7 +2,7 @@ package com.lyubenblagoev.postfixrest.service.model;
 
 import java.util.Date;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -18,7 +18,7 @@ public class DomainResource {
 	
 	private Boolean enabled;
 	
-	@NotBlank
+	@NotEmpty
 	private String name;
 	
 	public DomainResource() {

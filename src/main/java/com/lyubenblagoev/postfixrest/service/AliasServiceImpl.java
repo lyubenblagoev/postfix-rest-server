@@ -28,7 +28,7 @@ public class AliasServiceImpl implements AliasService {
 	
 	@Override
 	public AliasResource getAlias(Long id) {
-		Alias entity = repository.findOne(id);
+		Alias entity = repository.findById(id).orElse(null);
 		if (entity == null) {
 			throw new AliasNotFoundException("alias with id " + id + " not found");
 		}
@@ -69,8 +69,8 @@ public class AliasServiceImpl implements AliasService {
 	@Override
 	@Transactional
 	public AliasResource save(AliasChangeRequest alias) {
-		Alias entity = alias.getId() != null ? repository.findOne(alias.getId()) : new Alias();
-		Domain domain = domainRepository.findOne(alias.getDomainId());
+		Alias entity = alias.getId() != null ? repository.findById(alias.getId()).orElse(new Alias()) : new Alias();
+		Domain domain = domainRepository.findById(alias.getDomainId()).orElse(null);
 		if (domain == null) {
 			throw new DomainNotFoundException("domain with id " + alias.getDomainId() + " not found");
 		}

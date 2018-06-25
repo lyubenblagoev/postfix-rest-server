@@ -1,6 +1,6 @@
 package com.lyubenblagoev.postfixrest.service.model;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 
 import com.lyubenblagoev.postfixrest.service.model.validation.PasswordsMatches;
 
@@ -9,7 +9,7 @@ public class AccountChangeRequest {
 
 	private Long id;
 
-	@NotBlank
+	@NotEmpty
 	private String username;
 
 	private String password;

@@ -23,8 +23,7 @@ public class RequestLoggingFilterConfig {
 	
 	@Bean
 	public CustomizableTraceInterceptor customizableTraceInterceptor() {
-	    CustomizableTraceInterceptor cti = new CustomizableTraceInterceptor();
-	    return cti;
+	    return new CustomizableTraceInterceptor();
 	}
 	
 	@Bean

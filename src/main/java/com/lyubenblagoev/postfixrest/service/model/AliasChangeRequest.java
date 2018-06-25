@@ -1,14 +1,15 @@
 package com.lyubenblagoev.postfixrest.service.model;
 
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+
 
 public class AliasChangeRequest {
 	
 	private Long id;
 	private Long domainId;
-	@NotBlank private String name;
-	@Email @NotBlank private String email;
+	@NotEmpty private String name;
+	@Email @NotEmpty private String email;
 	private Boolean enabled;
 	
 	public Long getId() {

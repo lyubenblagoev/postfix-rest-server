@@ -1,5 +1,7 @@
 package com.lyubenblagoev.postfixrest.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,8 +68,8 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 	}
 	
 	private void validateAccount(Long accountId) {
-		Account account = accountRepository.findOne(accountId);
-		if (account == null) {
+		Optional<Account> account = accountRepository.findById(accountId);
+		if (!account.isPresent()) {
 			throw new BadRequestException("account with id " + accountId + " not found");
 		}
 	}
