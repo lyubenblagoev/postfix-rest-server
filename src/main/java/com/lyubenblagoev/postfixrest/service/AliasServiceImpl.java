@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,24 +19,27 @@ import com.lyubenblagoev.postfixrest.service.model.AliasResource;
 @Transactional(readOnly = true)
 public class AliasServiceImpl implements AliasService {
 	
-	@Autowired
-	private AliasRepository repository;
+	private final AliasRepository aliasRepository;
+	private final DomainRepository domainRepository;
 	
-	@Autowired 
-	private DomainRepository domainRepository;
+	public AliasServiceImpl(AliasRepository aliasRepository, DomainRepository domainRepository) {
+		this.aliasRepository = aliasRepository;
+		this.domainRepository = domainRepository;
+	}
 	
 	@Override
 	public AliasResource getAlias(Long id) {
-		Alias entity = repository.findById(id).orElse(null);
+		Alias entity = aliasRepository.findById(id).orElse(null);
 		if (entity == null) {
 			throw new AliasNotFoundException("alias with id " + id + " not found");
 		}
-		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(),
+				entity.getCreated(), entity.getUpdated());
 	}
 
 	@Override
 	public Collection<AliasResource> getAliasesByDomainName(String domainName) {
-		Collection<Alias> entities = repository.findByDomainName(domainName);
+		Collection<Alias> entities = aliasRepository.findByDomainName(domainName);
 		if (!entities.isEmpty()) {
 			return entities.stream().map(e -> {
 				return new AliasResource(e.getId(), e.getAlias(), e.getEmail(), e.isEnabled(), e.getCreated(), e.getUpdated());
@@ -48,7 +50,7 @@ public class AliasServiceImpl implements AliasService {
 	
 	@Override
 	public Collection<AliasResource> getAliasByDomainNameAndName(String domainName, String name) {
-		Collection<Alias> entities = repository.findByDomainNameAndAlias(domainName, name);
+		Collection<Alias> entities = aliasRepository.findByDomainNameAndAlias(domainName, name);
 		if (entities.isEmpty()) {
 			throw new AliasNotFoundException("alias " + name + " doesn't exist for domain " + domainName);
 		}
@@ -59,7 +61,7 @@ public class AliasServiceImpl implements AliasService {
 	
 	@Override
 	public AliasResource getAliasByDomainNameAndNameAndEmail(String domainName, String name, String email) {
-		Alias entity = repository.findByDomainNameAndAliasAndEmail(domainName, name, email);
+		Alias entity = aliasRepository.findByDomainNameAndAliasAndEmail(domainName, name, email);
 		if (entity == null) {
 			throw new AliasNotFoundException("Alias " + name + " and email recipient " + email + " doesn't exist for domain " + domainName);
 		}
@@ -69,13 +71,13 @@ public class AliasServiceImpl implements AliasService {
 	@Override
 	@Transactional
 	public AliasResource save(AliasChangeRequest alias) {
-		Alias entity = alias.getId() != null ? repository.findById(alias.getId()).orElse(new Alias()) : new Alias();
+		Alias entity = alias.getId() != null ? aliasRepository.findById(alias.getId()).orElse(new Alias()) : new Alias();
 		Domain domain = domainRepository.findById(alias.getDomainId()).orElse(null);
 		if (domain == null) {
 			throw new DomainNotFoundException("domain with id " + alias.getDomainId() + " not found");
 		}
 		entity.setDomain(domain);
-		if (alias.getId() == null && repository.findByDomainNameAndAliasAndEmail(domain.getName(), alias.getName(), alias.getEmail()) != null) {
+		if (alias.getId() == null && aliasRepository.findByDomainNameAndAliasAndEmail(domain.getName(), alias.getName(), alias.getEmail()) != null) {
 			throw new AliasExistsException("alias exists");
 		}
 		entity.setAlias(alias.getName());
@@ -84,28 +86,28 @@ public class AliasServiceImpl implements AliasService {
 		if (alias.getEnabled() != null) {
 			entity.setEnabled(alias.getEnabled());
 		}
-		entity = repository.save(entity);
+		entity = aliasRepository.save(entity);
 		return new AliasResource(entity.getId(), entity.getAlias(), entity.getEmail(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
 	}
 	
 	@Override
 	@Transactional
 	public void delete(String domain, String name, String email) {
-		Alias existingAlias = repository.findByDomainNameAndAliasAndEmail(domain, name, email);
+		Alias existingAlias = aliasRepository.findByDomainNameAndAliasAndEmail(domain, name, email);
 		if (existingAlias == null) {
 			throw new AliasNotFoundException("alias " + name + " with email recipient " + email + " doesn't exist for domain " + domain);
 		}
-		repository.delete(existingAlias);
+		aliasRepository.delete(existingAlias);
 	}
 	
 	@Override
 	@Transactional
 	public void delete(String domain, String name) {
-		Collection<Alias> existingAliases = repository.findByDomainNameAndAlias(domain, name);
+		Collection<Alias> existingAliases = aliasRepository.findByDomainNameAndAlias(domain, name);
 		if (existingAliases.isEmpty()) {
 			throw new AliasNotFoundException("alias " + name + " doesn't exist for domain " + domain);
 		}
-		existingAliases.forEach(repository::delete);
+		existingAliases.forEach(aliasRepository::delete);
 	}
 
 }

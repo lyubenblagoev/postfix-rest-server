@@ -2,7 +2,6 @@ package com.lyubenblagoev.postfixrest.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,8 +18,11 @@ import com.lyubenblagoev.postfixrest.service.model.DomainResource;
 @RequestMapping("/api/v1/domains")
 public class DomainController {
 	
-	@Autowired
-	private DomainService domainService;
+	private final DomainService domainService;
+	
+	public DomainController(DomainService domainService) {
+		this.domainService = domainService;
+	}
 	
 	@RequestMapping(method = RequestMethod.GET)
 	public List<DomainResource> listDomains() {

@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.codec.digest.Crypt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,18 +22,20 @@ import com.lyubenblagoev.postfixrest.service.model.AccountResource;
 @Transactional(readOnly = true)
 public class AccountServiceImpl implements AccountService {
 	
-	@Autowired
-	private AccountRepository repository;
+	private final AccountRepository accountRepository;
+	private final DomainRepository domainRepository;
+	private final MailServerConfiguration mailServerConfiguration;
 	
-	@Autowired
-	private DomainRepository domainRepository;
-	
-	@Autowired
-	private MailServerConfiguration mailServerConfiguration;
+	public AccountServiceImpl(AccountRepository accountRepository, DomainRepository domainRepository,
+			MailServerConfiguration mailServerConfiguration) {
+		this.accountRepository = accountRepository;
+		this.domainRepository = domainRepository;
+		this.mailServerConfiguration = mailServerConfiguration;
+	}
 
 	@Override
 	public AccountResource getAccountById(Long id) {
-		Account entity = repository.findById(id).orElse(null);
+		Account entity = accountRepository.findById(id).orElse(null);
 		if (entity == null) {
 			throw new AccountNotFoundException("no account with id " + id);
 		}
@@ -44,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Override
 	public List<AccountResource> getAccountsByDomainName(String name) {
-		List<Account> entities = repository.findByDomainName(name);
+		List<Account> entities = accountRepository.findByDomainName(name);
 		List<AccountResource> accounts = new ArrayList<>(entities.size());
 		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), 
 				e.getDomain().getId(), e.isEnabled(), e.getCreated(), e.getUpdated())));
@@ -53,7 +54,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public AccountResource getAccountByNameAndDomainName(String username, String domainName) {
-		Account account = repository.findByUsernameAndDomainName(username, domainName);
+		Account account = accountRepository.findByUsernameAndDomainName(username, domainName);
 		if (account == null) {
 			throw new AccountNotFoundException("account with username " + username + " and domain " + domainName + " not found");
 		}
@@ -64,7 +65,7 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public AccountResource save(AccountChangeRequest account) {
-		Account entity = account.getId() == null ? new Account() : repository.findById(account.getId()).get();
+		Account entity = account.getId() == null ? new Account() : accountRepository.findById(account.getId()).get();
 
 		Domain domain = domainRepository.findById(account.getDomainId()).orElse(null);
 		if (domain == null) {
@@ -72,7 +73,8 @@ public class AccountServiceImpl implements AccountService {
 		}
 		entity.setDomain(domain);
 
-		if (account.getId() == null && repository.findByUsernameAndDomainName(account.getUsername(), domain.getName()) != null) {
+		Account existingAccount = accountRepository.findByUsernameAndDomainName(account.getUsername(), domain.getName());
+		if (account.getId() == null && existingAccount != null) {
 			throw new AccountExistsException("another account with that name already exists");
 		}
 		
@@ -82,7 +84,8 @@ public class AccountServiceImpl implements AccountService {
 		}
 
 		entity.setUsername(account.getUsername());
-		if (account.getPassword() != null && account.getConfirmPassword() != null && account.getPassword().equals(account.getConfirmPassword())) {
+		if (account.getPassword() != null && account.getConfirmPassword() != null 
+				&& account.getPassword().equals(account.getConfirmPassword())) {
 			entity.setPassword(Crypt.crypt(account.getPassword()));
 		}
 		if (account.getEnabled() != null) {
@@ -90,7 +93,7 @@ public class AccountServiceImpl implements AccountService {
 		}
 		entity.setUpdated(new Date());
 
-		entity = repository.save(entity);
+		entity = accountRepository.save(entity);
 
 		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), 
 				entity.getDomain().getId(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
@@ -99,13 +102,13 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	@Transactional
 	public void delete(String username, String domainName) {
-		Account account = repository.findByUsernameAndDomainName(username, domainName);
+		Account account = accountRepository.findByUsernameAndDomainName(username, domainName);
 		if (account == null) {
 			throw new AccountNotFoundException("invalid account");
 		}
 		File domainDir = new File(mailServerConfiguration.getVhostsPath(), domainName);
 		FileUtils.deleteFolder(domainDir, username);
-		repository.delete(account);
+		accountRepository.delete(account);
 	}
 
 }

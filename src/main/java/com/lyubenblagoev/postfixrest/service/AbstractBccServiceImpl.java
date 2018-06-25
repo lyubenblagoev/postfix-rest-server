@@ -2,8 +2,6 @@ package com.lyubenblagoev.postfixrest.service;
 
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.lyubenblagoev.postfixrest.entity.Account;
 import com.lyubenblagoev.postfixrest.entity.Bcc;
 import com.lyubenblagoev.postfixrest.repository.AccountRepository;
@@ -12,8 +10,11 @@ import com.lyubenblagoev.postfixrest.service.model.BccResource;
 
 public abstract class AbstractBccServiceImpl implements BccService {
 	
-	@Autowired
-	private AccountRepository accountRepository;
+	protected final AccountRepository accountRepository;
+	
+	AbstractBccServiceImpl(AccountRepository accountRepository) {
+		this.accountRepository = accountRepository;
+	}
 
 	@SuppressWarnings({ "rawtypes"})
 	protected BccResource getBccResource(String domain, String account, BccRepository repo) {

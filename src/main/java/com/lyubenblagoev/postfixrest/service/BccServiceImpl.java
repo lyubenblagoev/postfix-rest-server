@@ -2,7 +2,6 @@ package com.lyubenblagoev.postfixrest.service;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +17,16 @@ import com.lyubenblagoev.postfixrest.service.model.BccResource;
 @Transactional(readOnly = true)
 public class BccServiceImpl extends AbstractBccServiceImpl {
 	
-	@Autowired
-	private OutgoingBccRepository outBccRepository;
+	private final OutgoingBccRepository outBccRepository;
+	private final IncommingBccRepository inBccRepository;
 
-	@Autowired
-	private IncommingBccRepository inBccRepository;
+	public BccServiceImpl(OutgoingBccRepository outBccRepository, IncommingBccRepository inBccRepository,
+			AccountRepository accountRepository) {
+		super(accountRepository);
+		this.outBccRepository = outBccRepository;
+		this.inBccRepository = inBccRepository;
+	}
 	
-	@Autowired
-	private AccountRepository accountRepository;
-
 	@Override
 	public BccResource getOutgoingBcc(String domain, String username) {
 		return getBccResource(domain, username, outBccRepository);

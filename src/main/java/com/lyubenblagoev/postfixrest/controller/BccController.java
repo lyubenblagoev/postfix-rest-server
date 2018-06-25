@@ -1,6 +1,5 @@
 package com.lyubenblagoev.postfixrest.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,20 +18,22 @@ import com.lyubenblagoev.postfixrest.service.model.BccResource;
 @RequestMapping("/api/v1/domains/{domain}/accounts/{account}/bccs")
 public class BccController {
 
-	@Autowired
-	private BccService service;
+	private final BccService bccService;
+	private final AccountService accountService;
 	
-	@Autowired
-	private AccountService accountService;
+	public BccController(BccService bccService, AccountService accountService) {
+		this.bccService = bccService;
+		this.accountService = accountService;
+	}
 	
 	@RequestMapping(value = "/outgoing", method = RequestMethod.GET)
 	public BccResource getOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
-		return service.getOutgoingBcc(domain, account);
+		return bccService.getOutgoingBcc(domain, account);
 	}
 
 	@RequestMapping(value = "/incomming", method = RequestMethod.GET)
 	public BccResource getIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
-		return service.getIncommingBcc(domain, account);
+		return bccService.getIncommingBcc(domain, account);
 	}
 
 	@RequestMapping(value = "/outgoing", method = RequestMethod.POST)
@@ -43,7 +44,7 @@ public class BccController {
 		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
 		bcc.setAccountId(accountResource.getId());
 
-		service.saveOutgoingBcc(bcc);
+		bccService.saveOutgoingBcc(bcc);
 	}
 
 	@RequestMapping(value = "/incomming", method = RequestMethod.POST)
@@ -54,7 +55,7 @@ public class BccController {
 		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
 		bcc.setAccountId(accountResource.getId());
 
-		service.saveIncommingBcc(bcc);
+		bccService.saveIncommingBcc(bcc);
 	}
 
 	@RequestMapping(value = "/outgoing", method = RequestMethod.PUT)
@@ -65,13 +66,13 @@ public class BccController {
 		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
 		bcc.setAccountId(accountResource.getId());
 
-		BccResource existingBcc = service.getOutgoingBcc(domain, account);
+		BccResource existingBcc = bccService.getOutgoingBcc(domain, account);
 		bcc.setId(existingBcc.getId());
 		if (bcc.getEmail() == null) {
 			bcc.setEmail(existingBcc.getEmail());
 		}
 
-		service.saveOutgoingBcc(bcc);
+		bccService.saveOutgoingBcc(bcc);
 	}
 
 	@RequestMapping(value = "/incomming", method = RequestMethod.PUT)
@@ -82,23 +83,23 @@ public class BccController {
 		AccountResource accountResource = accountService.getAccountByNameAndDomainName(account, domain);
 		bcc.setAccountId(accountResource.getId());
 
-		BccResource existingBcc = service.getIncommingBcc(domain, account);
+		BccResource existingBcc = bccService.getIncommingBcc(domain, account);
 		bcc.setId(existingBcc.getId());
 		if (bcc.getEmail() == null) {
 			bcc.setEmail(existingBcc.getEmail());
 		}
 
-		service.saveIncommingBcc(bcc);
+		bccService.saveIncommingBcc(bcc);
 	}
 
 	@RequestMapping(value = "/outgoing", method = RequestMethod.DELETE)
 	public void deleteOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
-		service.deleteOutgoingBcc(domain, account);
+		bccService.deleteOutgoingBcc(domain, account);
 	}
 
 	@RequestMapping(value = "/incomming", method = RequestMethod.DELETE)
 	public void deleteIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
-		service.deleteIncommingBcc(domain, account);
+		bccService.deleteIncommingBcc(domain, account);
 	}
 
 	private void checkForErrors(BindingResult result) {
