@@ -4,10 +4,12 @@ import java.util.Collection;
 
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lyubenblagoev.postfixrest.service.AliasNotFoundException;
@@ -30,22 +32,22 @@ public class AliasController {
 		this.domainService = domainService;
 	}
 
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public Collection<AliasResource> getAliases(@PathVariable("domain") String domain) {
 		return aliasService.getAliasesByDomainName(domain);
 	}
 	
-	@RequestMapping(value = "/{name}", method = RequestMethod.GET)
+	@GetMapping(value = "/{name}")
 	public Collection<AliasResource> getAliases(@PathVariable("domain") String domain, @PathVariable("name") String name) {
 		return aliasService.getAliasByDomainNameAndName(domain, name);
 	}
 	
-	@RequestMapping(value = "/{name}/{email:.+}", method = RequestMethod.GET)
+	@GetMapping(value = "/{name}/{email:.+}")
 	public AliasResource getAlias(@PathVariable("domain") String domain, @PathVariable("name") String name, @PathVariable("email") String email) {
 		return aliasService.getAliasByDomainNameAndNameAndEmail(domain, name, email);
 	}
 
-	@RequestMapping(value = "/{name}/{email:.+}", method = RequestMethod.PUT)
+	@PutMapping(value = "/{name}/{email:.+}")
 	public void edit(@PathVariable("domain") String domain, @PathVariable("name") String name, @PathVariable("email") String email, 
 			@Validated @RequestBody AliasChangeRequest aliasRequest, BindingResult result) {
 		AliasResource existingAlias = aliasService.getAliasByDomainNameAndNameAndEmail(domain, name, email);
@@ -56,17 +58,17 @@ public class AliasController {
 		saveAlias(domain, aliasRequest, result);
 	}
 
-	@RequestMapping(value = "/{name}", method = RequestMethod.DELETE)
+	@DeleteMapping(value = "/{name}")
 	public void delete(@PathVariable("domain") String domain, @PathVariable("name") String name) {
 		aliasService.delete(domain, name);
 	}
 	
-	@RequestMapping(value = "/{name}/{email:.+}", method = RequestMethod.DELETE)
+	@DeleteMapping(value = "/{name}/{email:.+}")
 	public void delete(@PathVariable("domain") String domain, @PathVariable("name") String name, @PathVariable("email") String email) {
 		aliasService.delete(domain, name, email);
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
+	@PutMapping
 	public void addAlias(@PathVariable("domain") String domain, @Validated @RequestBody AliasChangeRequest alias, BindingResult result) {
 		saveAlias(domain, alias, result);
 	}

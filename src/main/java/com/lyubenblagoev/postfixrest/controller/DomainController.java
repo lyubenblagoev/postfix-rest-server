@@ -4,10 +4,13 @@ import java.util.List;
 
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lyubenblagoev.postfixrest.service.BadRequestException;
@@ -24,27 +27,27 @@ public class DomainController {
 		this.domainService = domainService;
 	}
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public List<DomainResource> listDomains() {
 		return domainService.getAllDomains();
 	}
 	
-	@RequestMapping(method = RequestMethod.POST)
+	@PostMapping
 	public DomainResource addDomain(@RequestBody DomainResource domain) {
 		return domainService.save(domain);
 	}
 
-	@RequestMapping(value = "/{name:.+}", method = RequestMethod.GET)
+	@GetMapping(value = "/{name:.+}")
 	public DomainResource getDomain(@PathVariable("name") String name) {
 		return domainService.getDomainByName(name);
 	}
 	
-	@RequestMapping(value = "/{name:.+}", method = RequestMethod.DELETE)
+	@DeleteMapping(value = "/{name:.+}")
 	public void delete(@PathVariable("name") String name) {
 		domainService.delete(name);
 	}
 	
-	@RequestMapping(value = "/{name:.+}", method = RequestMethod.PUT)
+	@PutMapping(value = "/{name:.+}")
 	public void edit(@PathVariable("name") String name, @Validated @RequestBody DomainResource domain, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new BadRequestException(ControllerUtils.getError(result));

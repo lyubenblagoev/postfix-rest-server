@@ -4,10 +4,13 @@ import java.util.List;
 
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lyubenblagoev.postfixrest.service.AccountService;
@@ -28,28 +31,28 @@ public class AccountController {
 		this.domainService = domainService;
 	}
 	
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public List<AccountResource> getAccounts(@PathVariable("domain") String domain) {
 		return accountService.getAccountsByDomainName(domain);
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
+	@PostMapping
 	public void addAccount(@PathVariable("domain") String domainName, @Validated @RequestBody AccountChangeRequest account, BindingResult result) {
 		saveAccount(domainName, account, ControllerUtils.getError(result));
 	}
 	
-	@RequestMapping(value = "/{account:.+}", method = RequestMethod.GET)
+	@GetMapping(value = "/{account:.+}")
 	public AccountResource getAccount(@PathVariable("domain") String domainName, @PathVariable("account") String accountName) {
 		return accountService.getAccountByNameAndDomainName(accountName, domainName);
 		
 	}
 
-	@RequestMapping(value = "/{account:.+}", method = RequestMethod.DELETE)
+	@DeleteMapping(value = "/{account:.+}")
 	public void deleteAccount(@PathVariable("domain") String domainName, @PathVariable("account") String accountName) {
 		accountService.delete(accountName, domainName);
 	}
 	
-	@RequestMapping(value = "/{account:.+}", method = RequestMethod.PUT)
+	@PutMapping(value = "/{account:.+}")
 	public void edit(@PathVariable("domain") String domainName, @PathVariable("account") String account, 
 			@Validated @RequestBody AccountChangeRequest accountRequest, BindingResult result) {
 		AccountResource existingAccount = accountService.getAccountByNameAndDomainName(account, domainName);
