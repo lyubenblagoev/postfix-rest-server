@@ -1,8 +1,6 @@
-package com.lyubenblagoev.postfixrest.service;
+package com.lyubenblagoev.postfixrest;
 
-import com.lyubenblagoev.postfixrest.ApplicaitonRuntimeException;
-
-public class NotFoundException extends ApplicaitonRuntimeException {
+public class NotFoundException extends RuntimeException {
 
 	private static final long serialVersionUID = -1967579868614870552L;
 

@@ -1,7 +1,9 @@
 package com.lyubenblagoev.postfixrest.service;
 
 import java.util.Date;
+import java.util.Optional;
 
+import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.entity.Account;
 import com.lyubenblagoev.postfixrest.entity.Bcc;
 import com.lyubenblagoev.postfixrest.repository.AccountRepository;
@@ -16,14 +18,10 @@ public abstract class AbstractBccServiceImpl implements BccService {
 		this.accountRepository = accountRepository;
 	}
 
-	@SuppressWarnings({ "rawtypes"})
-	protected BccResource getBccResource(String domain, String account, BccRepository repo) {
+	@SuppressWarnings({"rawtypes"})
+	protected Optional<BccResource> getBccResource(String domain, String account, BccRepository repo) {
 		Bcc entity = repo.findByAccountDomainNameAndAccountUsername(domain, account);
-		if (entity == null) {
-			throw new BccNotFoundException("BCC for account " + account + ", domain " + domain + " not found");
-		}
-		return new BccResource(entity.getId(), entity.getAccount().getId(), entity.getReceiverEmailAddress(), 
-				entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+		return Optional.ofNullable(entity).map(BccResource::fromBcc);
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes" })

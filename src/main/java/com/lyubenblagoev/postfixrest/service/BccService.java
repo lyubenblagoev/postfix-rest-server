@@ -1,19 +1,21 @@
 package com.lyubenblagoev.postfixrest.service;
 
+import java.util.Optional;
+
 import com.lyubenblagoev.postfixrest.service.model.BccResource;
 
 public interface BccService {
 	
-	BccResource getOutgoingBcc(String domain, String username);
+	Optional<BccResource> getOutgoingBcc(String domain, String username);
 
-	BccResource saveOutgoingBcc(BccResource bcc);
+	Optional<BccResource> saveOutgoingBcc(BccResource bcc);
 
-	BccResource getIncommingBcc(String domain, String username);
+	Optional<BccResource> getIncommingBcc(String domain, String username);
 
-	BccResource saveIncommingBcc(BccResource bcc);
+	Optional<BccResource> saveIncommingBcc(BccResource bcc);
 
-	void deleteOutgoingBcc(String domain, String username);
+	void deleteOutgoingBcc(BccResource bcc);
 
-	void deleteIncommingBcc(String domain, String username);
+	void deleteIncommingBcc(BccResource bcc);
 	
 }

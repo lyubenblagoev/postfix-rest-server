@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,29 +31,31 @@ public class DomainServiceImpl implements DomainService {
 	public List<DomainResource> getAllDomains() {
 		Iterable<Domain> entities = domainRepository.findAll();
 		List<DomainResource> domains = new ArrayList<>();
-		entities.forEach(e -> domains.add(new DomainResource(e.getId(), e.getName(), e.isEnabled(), e.getCreated(), e.getUpdated())));
+		entities.forEach(e -> domains.add(DomainResource.fromDomain(e)));
 		return domains;
 	}
 
 	@Override
-	public DomainResource getDomainByName(String name) {
-		Domain entity = domainRepository.findByName(name);
-		if (entity == null) {
-			throw new DomainNotFoundException("no domain with name " + name);
-		}
-		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+	public Optional<DomainResource> getDomainByName(String name) {
+		return domainRepository.findByName(name)
+				.map(domain -> Optional.of(DomainResource.fromDomain(domain)))
+				.orElse(Optional.empty());
 	}
 
 	@Override
 	@Transactional
-	public DomainResource save(DomainResource domain) {
-		if (domain.getId() == null && domainRepository.findByName(domain.getName()) != null) {
-			throw new DomainExistsException("domain with that name already exist: " + domain.getName());
-		}
-		
-		Domain entity = domain.getId() == null ? new Domain() : domainRepository.findById(domain.getId()).get();
+	public Optional<DomainResource> save(DomainResource domain) {
+		Long id = domain.getId() != null ? domain.getId() : -1L;
+		String name = domain.getName();
 
-		if (domain.getId() != null && !entity.getName().equals(domain.getName())) {
+		Domain entity = domainRepository.findById(id).orElseGet(Domain::new);
+		
+		if (domain.getId() == null) {
+			Optional<Domain> domainByName = domainRepository.findByName(name);
+			if (domainByName.isPresent()) {
+				throw new EntityExistsException("domain with that name already exist: " + name);
+			}
+		} else if (!entity.getName().equals(domain.getName())) {
 			FileUtils.renameFolder(new File(mailServerConfiguration.getVhostsPath()), entity.getName(), domain.getName());
 		}
 
@@ -63,19 +66,15 @@ public class DomainServiceImpl implements DomainService {
 		entity.setUpdated(new Date());
 
 		entity = domainRepository.save(entity);
-
-		return new DomainResource(entity.getId(), entity.getName(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+		
+		return Optional.of(DomainResource.fromDomain(entity));
 	}
 
 	@Override
 	@Transactional
-	public void delete(String name) {
-		Domain domain = domainRepository.findByName(name);
-		if (domain == null) {
-			throw new DomainNotFoundException("domain not found: " + name);
-		}
-		FileUtils.deleteFolder(new File(mailServerConfiguration.getVhostsPath()), name);
-		domainRepository.delete(domain);
+	public void delete(DomainResource domain) {
+		FileUtils.deleteFolder(new File(mailServerConfiguration.getVhostsPath()), domain.getName());
+		domainRepository.delete(DomainResource.toDomain(domain));
 	}
 
 }

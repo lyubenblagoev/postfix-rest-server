@@ -5,6 +5,7 @@ import java.util.Date;
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.lyubenblagoev.postfixrest.entity.Domain;
 
 public class DomainResource {
 
@@ -21,20 +22,24 @@ public class DomainResource {
 	@NotEmpty
 	private String name;
 	
-	public DomainResource() {
+	public static DomainResource fromDomain(Domain domain) {
+		DomainResource resource = new DomainResource();
+		resource.setId(domain.getId());
+		resource.setName(domain.getName());
+		resource.setEnabled(domain.isEnabled());
+		resource.setCreated(domain.getCreated());
+		resource.setUpdated(domain.getUpdated());
+		return resource;
 	}
 	
-	public DomainResource(Long id, String name) {
-		this.id = id;
-		this.name = name;
-	}
-
-	public DomainResource(Long id, String name, boolean enabled, Date created, Date updated) {
-		this.id = id;
-		this.name = name;
-		this.enabled = enabled;
-		this.created = created;
-		this.updated = updated;
+	public static Domain toDomain(DomainResource domain) {
+		Domain d = new Domain();
+		d.setId(domain.getId());
+		d.setName(domain.getName());
+		d.setEnabled(domain.getEnabled());
+		d.setCreated(domain.getCreated());
+		d.setUpdated(domain.getUpdated());
+		return d;
 	}
 
 	public Long getId() {

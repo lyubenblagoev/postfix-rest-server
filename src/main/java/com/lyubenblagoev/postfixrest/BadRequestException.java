@@ -1,8 +1,6 @@
-package com.lyubenblagoev.postfixrest.service;
+package com.lyubenblagoev.postfixrest;
 
-import com.lyubenblagoev.postfixrest.ApplicaitonRuntimeException;
-
-public class BadRequestException extends ApplicaitonRuntimeException {
+public class BadRequestException extends RuntimeException {
 
 	private static final long serialVersionUID = 540536621916319350L;
 

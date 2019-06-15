@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.entity.Account;
 import com.lyubenblagoev.postfixrest.entity.IncommingBcc;
 import com.lyubenblagoev.postfixrest.entity.OutgoingBcc;
@@ -28,18 +29,18 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 	}
 	
 	@Override
-	public BccResource getOutgoingBcc(String domain, String username) {
+	public Optional<BccResource> getOutgoingBcc(String domain, String username) {
 		return getBccResource(domain, username, outBccRepository);
 	}
 
 	@Override
-	public BccResource getIncommingBcc(String domain, String username) {
+	public Optional<BccResource> getIncommingBcc(String domain, String username) {
 		return getBccResource(domain, username, inBccRepository);
 	}
 
 	@Override
 	@Transactional
-	public BccResource saveOutgoingBcc(BccResource resource) {
+	public Optional<BccResource> saveOutgoingBcc(BccResource resource) {
 		validateAccount(resource.getAccountId());
 
 		OutgoingBcc entity = outBccRepository.findByAccountId(resource.getAccountId());
@@ -48,13 +49,12 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 		}
 		entity = (OutgoingBcc) save(entity, resource, outBccRepository);
 
-		return new BccResource(entity.getId(), entity.getAccount().getId(), entity.getReceiverEmailAddress(),
-				entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+		return Optional.of(BccResource.fromBcc(entity));
 	}
 
 	@Override
 	@Transactional
-	public BccResource saveIncommingBcc(BccResource resource) {
+	public Optional<BccResource> saveIncommingBcc(BccResource resource) {
 		validateAccount(resource.getAccountId());
 
 		IncommingBcc entity = inBccRepository.findByAccountId(resource.getAccountId());
@@ -63,8 +63,7 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 		}
 		entity = (IncommingBcc) save(entity, resource, inBccRepository);
 
-		return new BccResource(entity.getId(), entity.getAccount().getId(), entity.getReceiverEmailAddress(),
-				entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+		return Optional.of(BccResource.fromBcc(entity));
 	}
 	
 	private void validateAccount(Long accountId) {
@@ -76,22 +75,20 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 	
 	@Override
 	@Transactional
-	public void deleteIncommingBcc(String domain, String username) {
-		IncommingBcc existingBcc = inBccRepository.findByAccountDomainNameAndAccountUsername(domain, username);
-		if (existingBcc == null) {
-			throw new BccNotFoundException("invalid BCC entry");
+	public void deleteIncommingBcc(BccResource bcc) {
+		Optional<Account> account = accountRepository.findById(bcc.getAccountId());
+		if (account.isPresent()) {
+			inBccRepository.delete((IncommingBcc) BccResource.toBcc(bcc, account.get()));
 		}
-		inBccRepository.delete(existingBcc);
 	}
 
 	@Override
 	@Transactional
-	public void deleteOutgoingBcc(String domain, String username) {
-		OutgoingBcc existingBcc = outBccRepository.findByAccountDomainNameAndAccountUsername(domain, username);
-		if (existingBcc == null) {
-			throw new BccNotFoundException("invalid BCC entry");
+	public void deleteOutgoingBcc(BccResource bcc) {
+		Optional<Account> account = accountRepository.findById(bcc.getAccountId());
+		if (account.isPresent()) {
+			outBccRepository.delete((OutgoingBcc) BccResource.toBcc(bcc, account.get()));
 		}
-		outBccRepository.delete(existingBcc);
 	}
 	
 }

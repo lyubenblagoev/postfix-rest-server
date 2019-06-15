@@ -9,8 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.lyubenblagoev.postfixrest.service.BadRequestException;
-import com.lyubenblagoev.postfixrest.service.NotFoundException;
+import com.lyubenblagoev.postfixrest.BadRequestException;
+import com.lyubenblagoev.postfixrest.NotFoundException;
+import com.lyubenblagoev.postfixrest.service.EntityExistsException;
 
 @ControllerAdvice
 public class ExceptionHandlerAdvice {
@@ -18,18 +19,31 @@ public class ExceptionHandlerAdvice {
 	private static final Logger log = LoggerFactory.getLogger(ExceptionHandlerAdvice.class); 
 
 	@ExceptionHandler(NotFoundException.class)
-	private ResponseEntity<ErrorInfo> notFoundHandler(HttpServletRequest request, Exception exception) {
+	private ResponseEntity<ApiErrorResponse> notFoundExceptionHandler(HttpServletRequest request, Exception exception) {
 		return handleException(exception, request, HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(BadRequestException.class)
-	private ResponseEntity<ErrorInfo> badRequestHandler(HttpServletRequest request, Exception exception) {
+	private ResponseEntity<ApiErrorResponse> badRequestExceptionHandler(HttpServletRequest request, Exception exception) {
 		return handleException(exception, request, HttpStatus.BAD_REQUEST);
 	}
 	
-	private ResponseEntity<ErrorInfo> handleException(Exception exception, HttpServletRequest request, HttpStatus httpStatus) {
-		ErrorInfo err = new ErrorInfo(exception.getMessage(), request.getRequestURI(), request.getMethod());
-		log.info(err.toString());
+	@ExceptionHandler(EntityExistsException.class)
+	private ResponseEntity<ApiErrorResponse> entityExistsExceptionHandler(HttpServletRequest request, Exception exception) {
+		return handleException(exception, request, HttpStatus.CONFLICT);
+	}
+	
+	@ExceptionHandler(Exception.class)
+	private ResponseEntity<ApiErrorResponse> exceptionHandler(HttpServletRequest request, Exception exception) {
+		return handleException(exception, request, HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+	
+	
+	private ResponseEntity<ApiErrorResponse> handleException(Exception exception, HttpServletRequest request, HttpStatus httpStatus) {
+		ApiErrorResponse err = new ApiErrorResponse(exception.getMessage(), request.getRequestURI(), request.getMethod());
+		if (log.isInfoEnabled()) {
+			log.info(err.toString());
+		}
 		return new ResponseEntity<>(err, httpStatus);
 	}
 

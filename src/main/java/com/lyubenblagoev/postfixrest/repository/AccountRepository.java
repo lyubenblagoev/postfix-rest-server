@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -10,6 +11,6 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
 
 	List<Account> findByDomainName(String name);
 
-	Account findByUsernameAndDomainName(String username, String domainName);
+	Optional<Account> findByUsernameAndDomainName(String username, String domainName);
 
 }

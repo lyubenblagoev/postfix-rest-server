@@ -3,6 +3,8 @@ package com.lyubenblagoev.postfixrest.service.model;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.lyubenblagoev.postfixrest.entity.Account;
+import com.lyubenblagoev.postfixrest.entity.Domain;
 
 public class AccountResource {
 
@@ -22,24 +24,27 @@ public class AccountResource {
 	
 	private boolean enabled;
 	
-	public AccountResource() {
+	public static AccountResource fromAccount(Account account) {
+		AccountResource resource = new AccountResource();
+		resource.setId(account.getId());
+		resource.setUsername(account.getUsername());
+		resource.setDomain(account.getDomain().getName());
+		resource.setDomainId(account.getDomain().getId());
+		resource.setEnabled(account.isEnabled());
+		resource.setCreated(account.getCreated());
+		resource.setUpdated(account.getUpdated());
+		return resource;
 	}
-
-	public AccountResource(Long id, String username, String domain, Long domainId) {
-		this.id = id;
-		this.username = username;
-		this.domain = domain;
-		this.domainId = domainId;
-	}
-
-	public AccountResource(Long id, String username, String domain, Long domainId, boolean enabled, Date created, Date updated) {
-		this.id = id;
-		this.username = username;
-		this.domain = domain;
-		this.domainId = domainId;
-		this.enabled = enabled;
-		this.created = created;
-		this.updated = updated;
+	
+	public static Account toAccount(AccountResource account, Domain domain) {
+		Account result = new Account();
+		result.setId(account.getId());
+		result.setUsername(account.getUsername());
+		result.setEnabled(account.isEnabled());
+		result.setCreated(account.getCreated());
+		result.setUpdated(account.getUpdated());
+		result.setDomain(domain);
+		return result;
 	}
 
 	public Long getId() {

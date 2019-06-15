@@ -2,7 +2,13 @@ package com.lyubenblagoev.postfixrest;
 
 import java.io.File;
 
-public class FileUtils {
+import org.assertj.core.util.Files;
+
+public final class FileUtils {
+	
+	private FileUtils() {
+		// Prevent class instantiation
+	}
 
 	public static boolean renameFolder(File parentFolder, String oldName, String newName) {
 		File oldFolder = new File(parentFolder, oldName);
@@ -10,9 +16,9 @@ public class FileUtils {
 		return oldFolder.renameTo(newFolder);
 	}
 	
-	public static boolean deleteFolder(File parentFolder, String name) {
+	public static void deleteFolder(File parentFolder, String name) {
 		File folder = new File(parentFolder, name);
-		return folder.delete();
+		Files.delete(folder);
 	}
 
 }

@@ -3,6 +3,7 @@ package com.lyubenblagoev.postfixrest.service.model;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.lyubenblagoev.postfixrest.entity.Alias;
 
 public class AliasResource {
 
@@ -20,22 +21,15 @@ public class AliasResource {
 	
 	private boolean enabled;
 	
-	public AliasResource() {
-	}
-
-	public AliasResource(Long id, String name, String email) {
-		this.id = id;
-		this.name = name;
-		this.email = email;
-	}
-
-	public AliasResource(Long id, String name, String email, boolean enabled, Date created, Date updated) {
-		this.id = id;
-		this.name = name;
-		this.email = email;
-		this.enabled = enabled;
-		this.created = created;
-		this.updated = updated;
+	public static AliasResource fromAlias(Alias alias) {
+		AliasResource resource = new AliasResource();
+		resource.setId(alias.getId());
+		resource.setName(alias.getAlias());
+		resource.setEmail(alias.getEmail());
+		resource.setEnabled(alias.isEnabled());
+		resource.setCreated(alias.getCreated());
+		resource.setUpdated(alias.getUpdated());
+		return resource;
 	}
 
 	public Long getId() {

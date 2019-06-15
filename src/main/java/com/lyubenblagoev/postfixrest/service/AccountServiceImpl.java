@@ -1,9 +1,10 @@
 package com.lyubenblagoev.postfixrest.service;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.Crypt;
 import org.springframework.stereotype.Service;
@@ -34,81 +35,68 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public AccountResource getAccountById(Long id) {
-		Account entity = accountRepository.findById(id).orElse(null);
-		if (entity == null) {
-			throw new AccountNotFoundException("no account with id " + id);
-		}
-		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), 
-				entity.getDomain().getId(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+	public Optional<AccountResource> getAccountById(Long id) {
+		return accountRepository.findById(id)
+				.map(account -> Optional.of(AccountResource.fromAccount(account)))
+				.orElse(Optional.empty());
 	}
 	
 	@Override
 	public List<AccountResource> getAccountsByDomainName(String name) {
-		List<Account> entities = accountRepository.findByDomainName(name);
-		List<AccountResource> accounts = new ArrayList<>(entities.size());
-		entities.forEach(e -> accounts.add(new AccountResource(e.getId(), e.getUsername(), e.getDomain().getName(), 
-				e.getDomain().getId(), e.isEnabled(), e.getCreated(), e.getUpdated())));
-		return accounts;
+		List<Account> existingAccounts = accountRepository.findByDomainName(name);
+		return existingAccounts.stream()
+				.map(AccountResource::fromAccount)
+				.collect(Collectors.toList());
 	} 
 
 	@Override
-	public AccountResource getAccountByNameAndDomainName(String username, String domainName) {
-		Account account = accountRepository.findByUsernameAndDomainName(username, domainName);
-		if (account == null) {
-			throw new AccountNotFoundException("account with username " + username + " and domain " + domainName + " not found");
-		}
-		return new AccountResource(account.getId(), account.getUsername(), account.getDomain().getName(), 
-				account.getDomain().getId(), account.isEnabled(), account.getCreated(), account.getUpdated());
+	public Optional<AccountResource> getAccountByNameAndDomainName(String username, String domainName) {
+		return accountRepository.findByUsernameAndDomainName(username, domainName)
+				.map(account -> Optional.of(AccountResource.fromAccount(account)))
+				.orElse(Optional.empty());
 	}
 
 	@Override
 	@Transactional
-	public AccountResource save(AccountChangeRequest account) {
-		Account entity = account.getId() == null ? new Account() : accountRepository.findById(account.getId()).get();
+	public Optional<AccountResource> save(AccountChangeRequest account) {
+		Long id = Optional.ofNullable(account.getId()).orElse(-1L);
+		Account entity = accountRepository.findById(id).orElse(new Account());
+		return domainRepository.findById(account.getDomainId())
+				.map(domain -> {
+					Optional<Account> existingAccount = accountRepository.findByUsernameAndDomainName(account.getUsername(), domain.getName());
+					if (account.getId() == null && existingAccount.isPresent()) {
+						throw new EntityExistsException("another account with that name already exists");
+					}
+					if (account.getId() != null && !account.getUsername().equals(entity.getUsername())) { 
+						File domainFolder = new File(mailServerConfiguration.getVhostsPath(), entity.getDomain().getName());
+						FileUtils.renameFolder(domainFolder, entity.getUsername(), account.getUsername());
+					}
 
-		Domain domain = domainRepository.findById(account.getDomainId()).orElse(null);
-		if (domain == null) {
-			throw new DomainNotFoundException("domain with id " + account.getDomainId() + " not found");
-		}
-		entity.setDomain(domain);
+					entity.setDomain(domain);
+					entity.setUsername(account.getUsername());
+					if (account.getPassword() != null && account.getConfirmPassword() != null 
+							&& account.getPassword().equals(account.getConfirmPassword())) {
+						entity.setPassword(Crypt.crypt(account.getPassword()));
+					}
+					if (account.getEnabled() != null) {
+						entity.setEnabled(account.getEnabled());
+					}
+					entity.setUpdated(new Date());
 
-		Account existingAccount = accountRepository.findByUsernameAndDomainName(account.getUsername(), domain.getName());
-		if (account.getId() == null && existingAccount != null) {
-			throw new AccountExistsException("another account with that name already exists");
-		}
-		
-		if (account.getId() != null && !account.getUsername().equals(entity.getUsername())) { 
-			File domainFolder = new File(mailServerConfiguration.getVhostsPath(), entity.getDomain().getName());
-			FileUtils.renameFolder(domainFolder, entity.getUsername(), account.getUsername());
-		}
-
-		entity.setUsername(account.getUsername());
-		if (account.getPassword() != null && account.getConfirmPassword() != null 
-				&& account.getPassword().equals(account.getConfirmPassword())) {
-			entity.setPassword(Crypt.crypt(account.getPassword()));
-		}
-		if (account.getEnabled() != null) {
-			entity.setEnabled(account.getEnabled());
-		}
-		entity.setUpdated(new Date());
-
-		entity = accountRepository.save(entity);
-
-		return new AccountResource(entity.getId(), entity.getUsername(), entity.getDomain().getName(), 
-				entity.getDomain().getId(), entity.isEnabled(), entity.getCreated(), entity.getUpdated());
+					Account saved = accountRepository.save(entity);
+					
+					return Optional.of(AccountResource.fromAccount(saved));
+				})
+				.orElse(Optional.empty());
 	}
 	
 	@Override
 	@Transactional
-	public void delete(String username, String domainName) {
-		Account account = accountRepository.findByUsernameAndDomainName(username, domainName);
-		if (account == null) {
-			throw new AccountNotFoundException("invalid account");
+	public void delete(AccountResource account) {
+		Optional<Domain> existingDomain = domainRepository.findById(account.getDomainId());
+		if (existingDomain.isPresent()) {
+			accountRepository.delete(AccountResource.toAccount(account, existingDomain.get()));
 		}
-		File domainDir = new File(mailServerConfiguration.getVhostsPath(), domainName);
-		FileUtils.deleteFolder(domainDir, username);
-		accountRepository.delete(account);
 	}
 
 }
