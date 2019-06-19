@@ -74,7 +74,7 @@ public class DomainController {
 			return domainService.save(domain)
 					.map(saved -> ResponseEntity.status(HttpStatus.OK).body(saved))
 					.orElseThrow(BadRequestException::new);
-		}).orElseThrow(() -> new NotFoundException("Domain " + domain.getName() + " not found"));
+		}).orElseThrow(() -> new NotFoundException("Domain " + name + " not found"));
 	}
 
 }
