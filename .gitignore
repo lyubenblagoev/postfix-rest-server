@@ -8,3 +8,5 @@ build
 .springBeans
 .factorypath
 /.apt_generated/
+/.idea/
+postfix-rest-server.iml
