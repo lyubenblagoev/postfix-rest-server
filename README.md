@@ -1,6 +1,6 @@
 # REST server for Postfix
 
-REST API for the Postfix mail server. Uses virtual domains configuration with database beckend (using the database schema provided in the [postfix-database](https://github.com/lyubenblagoev/postfix-database) project. Provides a REST endpoints for administering different aspects of your mail server: virtual domains, users, aliases, automatic sender and recever BCC.
+REST API for the Postfix mail server. Uses virtual domains configuration with database beckend (using the configuration files and script provided in the [postfix-database](https://github.com/lyubenblagoev/postfix-database) project. Provides a REST endpoints for administering different aspects of your mail server: virtual domains, users, aliases, automatic sender and recever BCC.
 
 Implemented in Java using Spring Boot.
 
