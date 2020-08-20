@@ -1,6 +1,6 @@
-bin
-build
-.gradle
+bin/
+build/
+target/
 .settings
 .eclipse
 .project
@@ -8,5 +8,5 @@ build
 .springBeans
 .factorypath
 /.apt_generated/
-/.idea/
+.idea/
 postfix-rest-server.iml

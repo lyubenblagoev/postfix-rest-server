@@ -6,19 +6,19 @@ Implemented in Java using Spring Boot.
 
 ## Requirements
 
-You need Java 8 installed on the server. For building the project you need [Gradle](https://gradle.org), as described in the following section.
+You need Java 11 installed on the server. For building the project you need [Maven](https://maven.apache.org), as described in the following section.
 
 Out of the box it works with [PostgreSQL](https://www.postgresql.org) and [MySQL](https://www.mysql.com) based databases, but can also be used with other databases for which a suitable JDBC driver exist.
 
 The Postfix REST Server uses the database schema provided in my [postfix-database](https://github.com/lyubenblagoev/postfix-database) project.
 
-Tested with Java 8, PostgreSQL 10.2 and MariaDB 10.1.14.
+Tested with Java 11, PostgreSQL 10.2 and MariaDB 10.1.14.
 
 ## Building the application
 
-This project uses [Gradle](https://gradle.org) as dependency management and build system. The project can be build using the following command:
+This project uses [Maven](https://maven.apache.org) as dependency management and build system. The project can be build using the following command:
 
-    $ gradle build
+    $ mvn package
 
 When the project is built you'll find the project jar file in the `build/libs` directory.
 
