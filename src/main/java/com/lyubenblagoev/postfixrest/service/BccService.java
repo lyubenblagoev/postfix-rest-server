@@ -10,12 +10,12 @@ public interface BccService {
 
 	Optional<BccResource> saveOutgoingBcc(BccResource bcc);
 
-	Optional<BccResource> getIncommingBcc(String domain, String username);
+	Optional<BccResource> getIncomingBcc(String domain, String username);
 
-	Optional<BccResource> saveIncommingBcc(BccResource bcc);
+	Optional<BccResource> saveIncomingBcc(BccResource bcc);
 
 	void deleteOutgoingBcc(BccResource bcc);
 
-	void deleteIncommingBcc(BccResource bcc);
+	void deleteIncomingBcc(BccResource bcc);
 	
 }

@@ -5,5 +5,5 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "recipient_bccs")
-public class IncommingBcc extends Bcc {
+public class IncomingBcc extends Bcc {
 }

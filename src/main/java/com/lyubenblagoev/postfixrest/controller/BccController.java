@@ -42,9 +42,9 @@ public class BccController {
 				.orElseThrow(() -> new NotFoundException(BCC_NOT_FOUND_MESSAGE));
 	}
 
-	@GetMapping(value = "/incomming")
-	public ResponseEntity<BccResource> getIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
-		return bccService.getIncommingBcc(domain, account)
+	@GetMapping(value = "/incoming")
+	public ResponseEntity<BccResource> getIncomingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
+		return bccService.getIncomingBcc(domain, account)
 				.map(bcc -> ResponseEntity.ok().body(bcc))
 				.orElseThrow(() -> new NotFoundException(BCC_NOT_FOUND_MESSAGE));
 	}
@@ -62,14 +62,14 @@ public class BccController {
 		}).orElseThrow(() -> new NotFoundException(ACCOUNT_NOT_FOUND_MESSAGE));
 	}
 
-	@PostMapping(value = "/incomming")
-	public ResponseEntity<BccResource> addIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
+	@PostMapping(value = "/incoming")
+	public ResponseEntity<BccResource> addIncomingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account,
 			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
 		Optional<AccountResource> existingAccount = accountService.getAccountByNameAndDomainName(account, domain);
 		return existingAccount.map(a -> {
 			bcc.setAccountId(a.getId());
-			return bccService.saveIncommingBcc(bcc)
+			return bccService.saveIncomingBcc(bcc)
 					.map(saved -> ResponseEntity.ok().body(saved))
 					.orElseThrow(() -> new NotFoundException(BCC_NOT_FOUND_MESSAGE));
 		}).orElseThrow(() -> new NotFoundException(ACCOUNT_NOT_FOUND_MESSAGE));
@@ -96,20 +96,20 @@ public class BccController {
 		}).orElseThrow(() -> new NotFoundException(ACCOUNT_NOT_FOUND_MESSAGE));
 	}
 
-	@PutMapping(value = "/incomming")
-	public ResponseEntity<BccResource> editIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
+	@PutMapping(value = "/incoming")
+	public ResponseEntity<BccResource> editIncomingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account,
 			@Validated @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
 		Optional<AccountResource> accountResource = accountService.getAccountByNameAndDomainName(account, domain);
 		return accountResource.map(a -> {
 			bcc.setAccountId(a.getId());
-			return bccService.getIncommingBcc(domain, account)
+			return bccService.getIncomingBcc(domain, account)
 					.map(existingBcc-> {
 						bcc.setId(existingBcc.getId());
 						if (bcc.getEmail() == null) {
 							bcc.setEmail(existingBcc.getEmail());
 						}
-						return bccService.saveIncommingBcc(bcc)
+						return bccService.saveIncomingBcc(bcc)
 								.map(saved -> ResponseEntity.ok().body(saved))
 								.orElse(ResponseEntity.notFound().build());
 					})
@@ -127,11 +127,11 @@ public class BccController {
 				.orElseThrow(() -> new NotFoundException(BCC_NOT_FOUND_MESSAGE));
 	}
 
-	@DeleteMapping(value = "/incomming")
-	public ResponseEntity<?> deleteIncommingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
+	@DeleteMapping(value = "/incoming")
+	public ResponseEntity<?> deleteIncomingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
 		return bccService.getOutgoingBcc(domain, account)
 				.map(bcc -> {
-					bccService.deleteIncommingBcc(bcc);
+					bccService.deleteIncomingBcc(bcc);
 					return ResponseEntity.ok().build();
 				})
 				.orElseThrow(() -> new NotFoundException(BCC_NOT_FOUND_MESSAGE));
