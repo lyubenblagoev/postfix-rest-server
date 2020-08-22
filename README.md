@@ -20,7 +20,7 @@ This project uses [Maven](https://maven.apache.org) as dependency management and
 
     $ mvn package
 
-When the project is built you'll find the project jar file in the `build/libs` directory.
+When the project is built you'll find the project jar file in the `target` directory.
 
 ## Configuration
 
