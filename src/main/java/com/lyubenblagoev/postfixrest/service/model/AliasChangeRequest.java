@@ -2,16 +2,23 @@ package com.lyubenblagoev.postfixrest.service.model;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
 
 public class AliasChangeRequest {
 	
 	private Long id;
 	private Long domainId;
-	@NotEmpty private String name;
-	@Email @NotEmpty private String email;
 	private Boolean enabled;
-	
+
+	@NotEmpty
+	@Pattern(regexp="^([a-z0-9]+((\\.|-)[a-z0-9]+)*)+$", message="must be a valid email prefix")
+	private String name;
+
+	@Email
+	@NotEmpty
+	private String email;
+
 	public Long getId() {
 		return id;
 	}

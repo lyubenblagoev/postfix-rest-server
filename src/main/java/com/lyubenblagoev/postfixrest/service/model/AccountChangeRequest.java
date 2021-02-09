@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.service.model;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
 import com.lyubenblagoev.postfixrest.service.model.validation.PasswordsMatches;
 
@@ -10,6 +11,7 @@ public class AccountChangeRequest {
 	private Long id;
 
 	@NotEmpty
+	@Pattern(regexp="^([a-z0-9]+((\\.|-)[a-z0-9]+)*)+$", message="must be a valid email prefix")
 	private String username;
 
 	private String password;
