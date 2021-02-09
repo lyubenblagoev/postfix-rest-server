@@ -3,6 +3,7 @@ package com.lyubenblagoev.postfixrest.service.model;
 import java.util.Date;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lyubenblagoev.postfixrest.entity.Domain;
@@ -20,6 +21,7 @@ public class DomainResource {
 	private Boolean enabled;
 	
 	@NotEmpty
+	@Pattern(regexp="^([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,}$", message = "Invalid domain name")
 	private String name;
 	
 	public static DomainResource fromDomain(Domain domain) {

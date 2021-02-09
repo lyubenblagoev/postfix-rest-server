@@ -39,7 +39,10 @@ public class DomainController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<DomainResource> addDomain(@RequestBody DomainResource domain) {
+	public ResponseEntity<DomainResource> addDomain(@Validated @RequestBody DomainResource domain, BindingResult result) {
+		if (result.hasErrors()) {
+			throw new BadRequestException(ControllerUtils.getError(result));
+		}
 		return domainService.save(domain)
 				.map(d -> ResponseEntity.status(HttpStatus.CREATED).body(domain))
 				.orElseThrow(() -> new NotFoundException("Failed to save domain " + domain.getName()));
