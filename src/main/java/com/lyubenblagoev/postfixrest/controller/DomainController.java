@@ -1,27 +1,18 @@
 package com.lyubenblagoev.postfixrest.controller;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.NotFoundException;
 import com.lyubenblagoev.postfixrest.service.DomainService;
 import com.lyubenblagoev.postfixrest.service.model.DomainResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/domains")
@@ -39,7 +30,7 @@ public class DomainController {
 	}
 	
 	@PostMapping
-	public ResponseEntity<DomainResource> addDomain(@Validated @RequestBody DomainResource domain, BindingResult result) {
+	public ResponseEntity<DomainResource> addDomain(@Valid @RequestBody DomainResource domain, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new BadRequestException(ControllerUtils.getError(result));
 		}
@@ -66,7 +57,7 @@ public class DomainController {
 	
 	@PutMapping(value = "/{name:.+}")
 	public ResponseEntity<DomainResource> edit(@PathVariable("name") String name,
-			@Validated @RequestBody DomainResource domain, BindingResult result) {
+			@Valid @RequestBody DomainResource domain, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new BadRequestException(ControllerUtils.getError(result));
 		}

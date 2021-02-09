@@ -1,26 +1,18 @@
 package com.lyubenblagoev.postfixrest.controller;
 
-import java.util.Collection;
-import java.util.Optional;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.NotFoundException;
 import com.lyubenblagoev.postfixrest.service.AliasService;
 import com.lyubenblagoev.postfixrest.service.DomainService;
 import com.lyubenblagoev.postfixrest.service.model.AliasChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.AliasResource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/domains/{domain}/aliases")
@@ -56,8 +48,8 @@ public class AliasController {
 
 	@PutMapping(value = "/{name}/{email:.+}")
 	public ResponseEntity<AliasResource> edit(@PathVariable("domain") String domain,
-			@PathVariable("name") String name, @PathVariable("email") String email, 
-			@Validated @RequestBody AliasChangeRequest aliasRequest, BindingResult result) {
+											  @PathVariable("name") String name, @PathVariable("email") String email,
+											  @Valid @RequestBody AliasChangeRequest aliasRequest, BindingResult result) {
 		Optional<AliasResource> existingAlias = aliasService.getAliasByDomainNameAndNameAndEmail(domain, name, email);
 		return existingAlias.map(a -> {
 			aliasRequest.setId(a.getId());
@@ -76,7 +68,7 @@ public class AliasController {
 	}
 
 	@PostMapping
-	public void addAlias(@PathVariable("domain") String domain, @Validated @RequestBody AliasChangeRequest alias, BindingResult result) {
+	public void addAlias(@PathVariable("domain") String domain, @Valid @RequestBody AliasChangeRequest alias, BindingResult result) {
 		saveAlias(domain, alias, result);
 	}
 
