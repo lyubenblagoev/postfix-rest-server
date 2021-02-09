@@ -21,7 +21,7 @@ public class DomainResource {
 	private Boolean enabled;
 	
 	@NotEmpty
-	@Pattern(regexp="^([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,}$", message = "Invalid domain name")
+	@Pattern(regexp="^([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,}$", message = "must be a valid domain name")
 	private String name;
 	
 	public static DomainResource fromDomain(Domain domain) {
