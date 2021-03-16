@@ -4,8 +4,11 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import com.lyubenblagoev.postfixrest.service.model.AccountChangeRequest;
+import com.lyubenblagoev.postfixrest.service.model.PasswordConfirmable;
 
-public class PasswordEqualsValidator implements ConstraintValidator<PasswordsMatches, Object> {
+import java.util.Objects;
+
+public class PasswordEqualsValidator implements ConstraintValidator<PasswordsMatches, PasswordConfirmable> {
 
 	@Override
 	public void initialize(PasswordsMatches constraintAnnotation) {
@@ -13,9 +16,8 @@ public class PasswordEqualsValidator implements ConstraintValidator<PasswordsMat
 	}
 
 	@Override
-	public boolean isValid(Object value, ConstraintValidatorContext context) {
-		AccountChangeRequest obj = (AccountChangeRequest) value;
-		return obj.getPassword() == null || (obj.getConfirmPassword() != null && obj.getPassword().equals(obj.getConfirmPassword()));
+	public boolean isValid(PasswordConfirmable value, ConstraintValidatorContext context) {
+	    return Objects.equals(value.getPassword(), value.getPasswordConfirmation());
 	}
 
 }

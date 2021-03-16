@@ -44,7 +44,7 @@ public class AccountController {
 	public ResponseEntity<?> addAccount(@PathVariable("domain") String domainName,
 										@Valid @RequestBody AccountChangeRequest account, BindingResult result) {
 		if (result.hasErrors()) {
-			return ResponseEntity.badRequest().body(result.getAllErrors());
+			throw new BadRequestException(ControllerUtils.getError(result));
 		}
 		return domainService.getDomainByName(domainName).map(domain -> {
 			account.setDomainId(domain.getId());

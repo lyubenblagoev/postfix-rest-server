@@ -6,7 +6,7 @@ import javax.validation.constraints.Pattern;
 import com.lyubenblagoev.postfixrest.service.model.validation.PasswordsMatches;
 
 @PasswordsMatches
-public class AccountChangeRequest {
+public class AccountChangeRequest implements PasswordConfirmable {
 
 	private Long id;
 
@@ -35,6 +35,7 @@ public class AccountChangeRequest {
 		this.username = username;
 	}
 
+	@Override
 	public String getPassword() {
 		return password;
 	}
@@ -43,7 +44,8 @@ public class AccountChangeRequest {
 		this.password = password;
 	}
 
-	public String getConfirmPassword() {
+	@Override
+	public String getPasswordConfirmation() {
 		return confirmPassword;
 	}
 

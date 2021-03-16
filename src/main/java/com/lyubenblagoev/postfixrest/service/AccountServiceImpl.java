@@ -74,8 +74,8 @@ public class AccountServiceImpl implements AccountService {
 
 					entity.setDomain(domain);
 					entity.setUsername(account.getUsername());
-					if (account.getPassword() != null && account.getConfirmPassword() != null 
-							&& account.getPassword().equals(account.getConfirmPassword())) {
+					if (account.getPassword() != null && account.getPasswordConfirmation() != null
+							&& account.getPassword().equals(account.getPasswordConfirmation())) {
 						entity.setPassword(Crypt.crypt(account.getPassword()));
 					}
 					if (account.getEnabled() != null) {

@@ -2,15 +2,21 @@ package com.lyubenblagoev.postfixrest.controller;
 
 import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.NotFoundException;
+import com.lyubenblagoev.postfixrest.security.UserPrincipal;
 import com.lyubenblagoev.postfixrest.service.DomainService;
 import com.lyubenblagoev.postfixrest.service.model.DomainResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +42,7 @@ public class DomainController {
 		}
 		return domainService.save(domain)
 				.map(d -> ResponseEntity.status(HttpStatus.CREATED).body(domain))
-				.orElseThrow(() -> new NotFoundException("Failed to save domain " + domain.getName()));
+				.orElseThrow(() -> new NotFoundException("Failed to update domain " + domain.getName()));
 	}
 
 	@GetMapping(value = "/{name:.+}")
