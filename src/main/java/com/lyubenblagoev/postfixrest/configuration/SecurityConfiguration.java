@@ -26,7 +26,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UserDetailsPasswordService userDetailsPasswordService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${admin.user.bcryptpasswordencoder.strength:-1}")
+    @Value("${users.passwords.bcrypt-password-encoder.strength:-1}")
     private int bCryptPasswordEncoderStrength;
 
     public SecurityConfiguration(CustomUserDetailsService userDetailsService,
