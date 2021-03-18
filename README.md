@@ -64,7 +64,7 @@ users.refresh-token.days-valid=30
 
 The application can be run as any other jar file: 
 
-    java -jar postfix-rest-server-0.1.0-SNAPSHOT.jar
+    java -jar postfix-rest-server-0.2.0.jar
 
 The jar file contains jdbc drivers for PostgreSQL and MySQL. To use it with different database management system you need to add the appropriate JDBC driver jar file to the classpath when running the application.
 
