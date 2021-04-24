@@ -136,7 +136,7 @@ public class UserServiceImpl implements UserService {
             logger.debug("Invalid refresh token " + refreshToken);
             throw new BadCredentialsException("Bad credentials");
         }
-        user.getDevices().remove(deviceOptional.get());
+        user.removeDevice(deviceOptional.get());
         userRepository.save(user);
     }
 

@@ -3,6 +3,7 @@ package com.lyubenblagoev.postfixrest.entity;
 import javax.persistence.*;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -60,8 +61,15 @@ public class User extends BaseEntity {
     }
 
     public void addDevice(Device device) {
+        Objects.requireNonNull(device);
         getDevices().add(device);
         device.setUser(this);
+    }
+
+    public void removeDevice(Device device) {
+        Objects.requireNonNull(device);
+        getDevices().remove(device);
+        device.setUser(null);
     }
 
     public List<Role> getRoles() {
