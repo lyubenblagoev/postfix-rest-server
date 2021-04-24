@@ -14,8 +14,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user")
     private List<Device> devices = Collections.emptyList();
 
     @ManyToMany
@@ -62,6 +61,7 @@ public class User extends BaseEntity {
 
     public void addDevice(Device device) {
         getDevices().add(device);
+        device.setUser(this);
     }
 
     public List<Role> getRoles() {

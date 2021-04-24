@@ -1,14 +1,15 @@
 package com.lyubenblagoev.postfixrest.entity;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.util.Date;
 
 @Entity
 @Table(name = "user_devices")
 public class Device extends BaseEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private String refreshToken;
 
@@ -20,6 +21,14 @@ public class Device extends BaseEntity {
     private String type;
 
     private String os;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public String getRefreshToken() {
         return refreshToken;
