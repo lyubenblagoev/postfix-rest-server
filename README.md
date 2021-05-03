@@ -89,56 +89,290 @@ WantedBy=multi-user.target
 
 Note that when you rename or delete account or domain, the corresponding directory is also renamed or deleted. Ensure that the user that is used for running the server has write privileges on your mail vhosts directory and its subdirectories.
 
-## Usage
+## API Reference
 
 Here's a short overview of the possible REST API calls:
 
-**Authentication**
+### Authentication
 
-  * **POST** http://URL/api/v1/auth/signin - log in using the administrative user's credentials (params: login, password)
-  * **POST** http://URL/api/v1/auth/signout - log out (params: login, refreshToken)
-  * **POST** http://URL/api/v1/auth/refresh-token - refresh user's authentication token (params: login, refreshToken)
+**Log in using the administrative user's credentials**
 
-**Users**
+    POST /api/v1/auth/signin
 
-  * **POST** http://URL/api/v1/users/{login} - update administrative user's account information (params: email, password, passwordConfirmation)
+| Parameter    | Type   | Description                                    |
+|--------------|--------|------------------------------------------------|
+| login        | string | **Required** Your user's login / email address |
+| password     | string | **Required** Your user's password              |
 
-**Domains**
+**Log Out**
 
-  * **GET** http://URL/api/v1/domains - get all domains
-  * **GET** http://URL/api/v1/domains/{domain} - get domain with the specified name
-  * **POST** http://URL/api/v1/domains - create domain (params: name)
-  * **PUT** http://URL/api/v1/domains/{domain} - update domain (params: name)
-  * **DELETE** http://URL/api/v1/domains/{domain} - delete domain with name {domain}
+    POST /api/v1/auth/signout
 
-**Accounts**
+| Parameter    | Type   | Description                                    |
+|--------------|--------|------------------------------------------------|
+| login        | string | **Required** Your user's log**in / email address |
+| refreshToken | string | **Required** Your refresh token                |
 
-  * **GET** http://URL/api/v1/domains/{domain}/accounts - get all accounts for the specified domain
-  * **GET** http://URL/api/v1/domains/{domain}/accounts/{username} - get the user with username {username} for domain {domain}
-  * **POST** http://URL/api/v1/domains/{domain}/accounts/ - create a new account for domain {domain} (params: username, password, confirmPassword)
-  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username} - update account with username {username} for domain {domain} (params: username, password, confirmPassword)
-  * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username} - delete account with username {username} for domain {domain}
+**Generate a new access token**
 
-**Aliases**
+    POST /api/v1/auth/refresh-token
 
-  * **GET** http://URL/api/v1/domains/{domain}/aliases - get all aliases for the specified domain
-  * **GET** http://URL/api/v1/domains/{domain}/aliases/{name} - get all aliases for domain {domain} and name {name}
-  * **GET** http://URL/api/v1/domains/{domain}/aliases/{name}/{email} - get the alias {alias} in domain {domain} and recipient {email} 
-  * **POST** http://URL/api/v1/domains/{domain}/aliases/ - create a new alias for domain {domain} (params: alias, email)
-  * **PUT** http://URL/api/v1/domains/{domain}/aliases/{name}/{email} - update alias with name {alias} in domain {domain} and recipient {email} (params: name, email)
-  * **DELETE** http://URL/api/v1/domains/{domain}/aliases/{name} - delete all aliases with name {name} in domain {domain}
-  * **DELETE** http://URL/api/v1/domains/{domain}/aliases/{name}/{email} - delete alias with alias {alias} in domain {domain} and recipient {email}
+| Parameter    | Type   | Description                                    |
+|--------------|--------|------------------------------------------------|
+| login        | string | **Required** Your user's login / email address |
+| refreshToken | string | **Required** Your refresh token                |
 
-**BCCs**
+### Users
 
-  * **GET** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incoming - get the automatic BCC address for all mail targeted to the specified account
-  * **GET** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - get the automatic BCC address for all mail that is sent from the specified account
-  * **POST** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incoming - set automatic BCC address for all mail targeted to the specified account
-  * **POST** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - set automatic BCC address for all mail that is sent from the specified account
-  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incoming - update the incoming auto bcc address for the specified account
-  * **PUT** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - update the outgoing auto bcc address for the specified account
-  * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/incoming - delete the incoming BCC address for the specified account
-  * **DELETE** http://URL/api/v1/domains/{domain}/accounts/{username}/bccs/outgoing - delete the outgoing BCC address for the specified account
+**Update administrative user's account information
+
+    POST /api/v1/users/${login}
+
+| Parameter            | Type   | Description                                            |
+|----------------------|--------|--------------------------------------------------------|
+| login                | string | **Required** Your user's login / email address         |
+| email                | string | A new email address to use as login                    |
+| password             | string | A password to change the user's password               |
+| passwordConfirmation | string | Password confirmation (must be the same as *password*) |
+
+###Domains
+
+**List all configured domains**
+
+    GET /api/v1/domains
+
+**Get information for a specific domain**
+
+    GET /api/v1/domains/${domain}
+
+| Parameter | Type   | Description                         |
+|-----------|--------|-------------------------------------|
+| domain    | string | **Required** The name of the domain |
+
+**Create a new domain**
+
+    POST /api/v1/domains
+
+| Parameter | Type    | Description                                             |
+|-----------|---------|---------------------------------------------------------|
+| name      | string  | A new name for the domain specified by *domain*         |
+| enabled   | boolean | A boolean value that specifies if the domain is enabled |
+
+**Update domain**
+
+    PUT /api/v1/domains/${domain}
+
+| Parameter | Type    | Description                                             |
+|-----------|---------|---------------------------------------------------------|
+| domain    | string  | **Required** The name of the domain                     |
+| name      | string  | A new name for the domain specified by *domain*         |
+| enabled   | boolean | A boolean value that specifies if the domain is enabled |
+
+**Delete a domain**
+
+    DELETE /api/v1/domains/${domain}
+
+| Parameter | Type   | Description                         |
+|-----------|--------|-------------------------------------|
+| name      | string | **Required** The name of the domain |
+
+###Accounts
+
+**Get all accounts for the specified domain**
+
+    GET  /api/v1/domains/${domain}/accounts
+
+| Parameter | Type   | Description                         |
+|-----------|--------|-------------------------------------|
+| name      | string | **Required** The name of the domain |
+
+**Get information for an email account with given username and domain name**
+
+    GET /api/v1/domains/${domain}/accounts/${username}
+
+| Parameter | Type    | Description                                             |
+|-----------|---------|---------------------------------------------------------|
+| domain    | string  | **Required** The name of the domain                     |
+| username  | string  | **Required** The username prefix for an email account   |
+
+**Create a new email account**
+
+    POST /api/v1/domains/${domain}/accounts/
+
+| Parameter       | Type    | Description                                              |
+|-----------------|---------|----------------------------------------------------------|
+| domain          | string  | **Required** The name of the domain                      |
+| username        | string  | **Required** The username prefix for an email account    |
+| password        | string  | A password for the email account                         |
+| confirmPassword | string  | A confirmation for the password specified in *password*  |
+| enabled         | boolean | A boolean value that specifies if the account is enabled |
+
+**Change an email account**
+
+    PUT /api/v1/domains/${domain}/accounts/${username}
+
+| Parameter       | Type    | Description                                              |
+|-----------------|---------|----------------------------------------------------------|
+| domain          | string  | **Required** The name of the domain                      |
+| username        | string  | **Required** The username prefix for an email account    |
+| username        | string  | The new username prefix for the email account            |
+| password        | string  | A password for the email account                         |
+| confirmPassword | string  | A confirmation for the password specified in *password*  |
+| enabled         | boolean | A boolean value that specifies if the account is enabled |
+
+**Delete an email account**
+
+    DELETE /api/v1/domains/${domain}/accounts/${username}
+
+| Parameter       | Type    | Description                                              |
+|-----------------|---------|----------------------------------------------------------|
+| domain          | string  | **Required** The name of the domain                      |
+| username        | string  | **Required** The username prefix for an email account    |
+
+###Aliases
+
+**Get all aliases for specific domain**
+
+    GET /api/v1/domains/${domain}/aliases
+
+| Parameter | Type   | Description                         |
+|-----------|--------|-------------------------------------|
+| domain    | string | **Required** The name of the domain |
+
+**Get all aliases for domain and email prefix**
+
+    GET /api/v1/domains/${domain}/aliases/${name}
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| name      | string | **Required** The email prefix for the given alias |
+
+**Get information for specific alias in the given domain that is forwarding to the given recipient**
+
+    GET /api/v1/domains/${domain}/aliases/${name}/${email}
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| name      | string | **Required** The email prefix for the given alias |
+| email     | string | **Required** A recipient assigned to this alias   |
+
+**Create a new alias**
+
+    POST /api/v1/domains/${domain}/aliases/
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| name      | string | **Required** The email prefix for the given alias |
+| email     | string | **Required** A recipient assigned to this alias   |
+
+**Update an alias**
+
+    PUT /api/v1/domains/${domain}/aliases/${name}/${email}
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| name      | string | **Required** The email prefix for the given alias |
+| name      | string | The email prefix for the given alias              |
+| email     | string | A recipient assigned to this alias                |
+
+**Delete all aliases with specific email prefix and domain**
+
+    DELETE /api/v1/domains/${domain}/aliases/${name}
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| name      | string | **Required** The email prefix for the given alias |
+
+**Delete all aliases with specific email prefix, domain and recipient**
+
+    DELETE /api/v1/domains/${domain}/aliases/${name}/${email}
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| name      | string | **Required** The email prefix for the given alias |
+| email     | string | **Required** A recipient assigned to this alias   |
+
+###BCCs
+
+**Get the automatic BCC address for all mail targeted to the specified account**
+
+    GET /api/v1/domains/${domain}/accounts/${username}/bccs/incoming
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+**Get the automatic BCC address for all mail that is sent from the specified account**
+
+    GET /api/v1/domains/${domain}/accounts/${username}/bccs/outgoing
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+**Set automatic BCC address for all mail targeted to the specified account**
+
+    POST /api/v1/domains/${domain}/accounts/${username}/bccs/incoming
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+**Set automatic BCC address for all mail that is sent from the specified account**
+
+    POST /api/v1/domains/${domain}/accounts/${username}/bccs/outgoing
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+**Update the incoming auto bcc address for the specified account**
+
+    PUT /api/v1/domains/${domain}/accounts/${username}/bccs/incoming
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+**Update the outgoing auto bcc address for the specified account**
+
+    PUT /api/v1/domains/${domain}/accounts/${username}/bccs/outgoing
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+**Delete the incoming BCC address for the specified account**
+
+    DELETE /api/v1/domains/${domain}/accounts/${username}/bccs/incoming
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+**Delete the outgoing BCC address for the specified account**
+
+    DELETE /api/v1/domains/${domain}/accounts/${username}/bccs/outgoing
+
+| Parameter | Type   | Description                                       |
+|-----------|--------|---------------------------------------------------|
+| domain    | string | **Required** The name of the domain               |
+| username  | string | **Required** The email address prefix             |
+
+## Clients
 
 [emailctl](https://github.com/lyubenblagoev/emailctl) is a CLI (command line interface) for the Postfix REST Server. It supports all APIs and allows server management through the command line.
 
