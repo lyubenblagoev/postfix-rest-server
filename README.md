@@ -262,22 +262,24 @@ Here's a short overview of the possible REST API calls:
 
     POST /api/v1/domains/${domain}/aliases/
 
-| Parameter | Type   | Description                                       |
-|-----------|--------|---------------------------------------------------|
-| domain    | string | **Required** The name of the domain               |
-| name      | string | **Required** The email prefix for the given alias |
-| email     | string | **Required** A recipient assigned to this alias   |
+| Parameter | Type   | Description                                             |
+|-----------|--------|---------------------------------------------------------|
+| domain    | string | **Required** The name of the domain                     |
+| name      | string | **Required** The email prefix for the given alias       |
+| email     | string | **Required** A recipient assigned to this alias         |
+| enabled   | boolean | A boolean value that specifies if the alias is enabled |
 
 **Update an alias**
 
     PUT /api/v1/domains/${domain}/aliases/${name}/${email}
 
-| Parameter | Type   | Description                                       |
-|-----------|--------|---------------------------------------------------|
-| domain    | string | **Required** The name of the domain               |
-| name      | string | **Required** The email prefix for the given alias |
-| name      | string | The email prefix for the given alias              |
-| email     | string | A recipient assigned to this alias                |
+| Parameter | Type   | Description                                             |
+|-----------|--------|---------------------------------------------------------|
+| domain    | string | **Required** The name of the domain                     |
+| name      | string | **Required** The email prefix for the given alias       |
+| name      | string | The email prefix for the given alias                    |
+| email     | string | A recipient assigned to this alias                      |
+| enabled   | boolean | A boolean value that specifies if the alias is enabled |
 
 **Delete all aliases with specific email prefix and domain**
 
@@ -322,37 +324,41 @@ Here's a short overview of the possible REST API calls:
 
     POST /api/v1/domains/${domain}/accounts/${username}/bccs/incoming
 
-| Parameter | Type   | Description                                       |
-|-----------|--------|---------------------------------------------------|
-| domain    | string | **Required** The name of the domain               |
-| username  | string | **Required** The email address prefix             |
+| Parameter | Type   | Description                                           |
+|-----------|--------|-------------------------------------------------------|
+| domain    | string | **Required** The name of the domain                   |
+| username  | string | **Required** The email address prefix                 |
+| enabled   | boolean | A boolean value that specifies if the BCC is enabled |
 
 **Set automatic BCC address for all mail that is sent from the specified account**
 
     POST /api/v1/domains/${domain}/accounts/${username}/bccs/outgoing
 
-| Parameter | Type   | Description                                       |
-|-----------|--------|---------------------------------------------------|
-| domain    | string | **Required** The name of the domain               |
-| username  | string | **Required** The email address prefix             |
+| Parameter | Type   | Description                                           |
+|-----------|--------|-------------------------------------------------------|
+| domain    | string | **Required** The name of the domain                   |
+| username  | string | **Required** The email address prefix                 |
+| enabled   | boolean | A boolean value that specifies if the BCC is enabled |
 
 **Update the incoming auto bcc address for the specified account**
 
     PUT /api/v1/domains/${domain}/accounts/${username}/bccs/incoming
 
-| Parameter | Type   | Description                                       |
-|-----------|--------|---------------------------------------------------|
-| domain    | string | **Required** The name of the domain               |
-| username  | string | **Required** The email address prefix             |
+| Parameter | Type   | Description                                           |
+|-----------|--------|-------------------------------------------------------|
+| domain    | string | **Required** The name of the domain                   |
+| username  | string | **Required** The email address prefix                 |
+| enabled   | boolean | A boolean value that specifies if the BCC is enabled |
 
 **Update the outgoing auto bcc address for the specified account**
 
     PUT /api/v1/domains/${domain}/accounts/${username}/bccs/outgoing
 
-| Parameter | Type   | Description                                       |
-|-----------|--------|---------------------------------------------------|
-| domain    | string | **Required** The name of the domain               |
-| username  | string | **Required** The email address prefix             |
+| Parameter | Type   | Description                                           |
+|-----------|--------|-------------------------------------------------------|
+| domain    | string | **Required** The name of the domain                   |
+| username  | string | **Required** The email address prefix                 |
+| enabled   | boolean | A boolean value that specifies if the BCC is enabled |
 
 **Delete the incoming BCC address for the specified account**
 
