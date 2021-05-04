@@ -135,7 +135,7 @@ Here's a short overview of the possible REST API calls:
 | password             | string | A password to change the user's password               |
 | passwordConfirmation | string | Password confirmation (must be the same as *password*) |
 
-###Domains
+### Domains
 
 **List all configured domains**
 
@@ -176,7 +176,7 @@ Here's a short overview of the possible REST API calls:
 |-----------|--------|-------------------------------------|
 | name      | string | **Required** The name of the domain |
 
-###Accounts
+### Accounts
 
 **Get all accounts for the specified domain**
 
@@ -229,7 +229,7 @@ Here's a short overview of the possible REST API calls:
 | domain          | string  | **Required** The name of the domain                      |
 | username        | string  | **Required** The username prefix for an email account    |
 
-###Aliases
+### Aliases
 
 **Get all aliases for specific domain**
 
@@ -300,7 +300,7 @@ Here's a short overview of the possible REST API calls:
 | name      | string | **Required** The email prefix for the given alias |
 | email     | string | **Required** A recipient assigned to this alias   |
 
-###BCCs
+### BCCs
 
 **Get the automatic BCC address for all mail targeted to the specified account**
 
