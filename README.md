@@ -110,7 +110,7 @@ Here's a short overview of the possible REST API calls:
 
 | Parameter    | Type   | Description                                    |
 |--------------|--------|------------------------------------------------|
-| login        | string | **Required** Your user's log**in / email address |
+| login        | string | **Required** Your user's login / email address |
 | refreshToken | string | **Required** Your refresh token                |
 
 **Generate a new access token**
@@ -124,7 +124,7 @@ Here's a short overview of the possible REST API calls:
 
 ### Users
 
-**Update administrative user's account information
+**Update administrative user's account information**
 
     POST /api/v1/users/${login}
 
