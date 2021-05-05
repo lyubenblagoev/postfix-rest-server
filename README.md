@@ -382,6 +382,8 @@ Here's a short overview of the possible REST API calls:
 
 [emailctl](https://github.com/lyubenblagoev/emailctl) is a CLI (command line interface) for the Postfix REST Server. It supports all APIs and allows server management through the command line.
 
+[Postfix REST Server Control Panel](https://github.com/lyubenblagoev/postfix-rest-client) is a web interface for managing the Postfix REST Server. Currently it still doesn't support all functions of the server (automatic BCC is not supported yet in the web UI).
+
 ## Bug reports 
 
 If you discover any bugs, feel free to create an issue on GitHub. Please add as much information as possible to help me fix the possible bug. I encourage you to help even more by forking the project and sending a pull request.
