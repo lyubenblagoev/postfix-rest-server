@@ -126,7 +126,7 @@ Here's a short overview of the possible REST API calls:
 
 **Update administrative user's account information**
 
-    POST /api/v1/users/${login}
+    PUT /api/v1/users/${login}
 
 | Parameter            | Type   | Description                                            |
 |----------------------|--------|--------------------------------------------------------|
