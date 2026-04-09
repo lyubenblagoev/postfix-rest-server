@@ -1,0 +1,11 @@
+[Unit]
+Description=REST server for administering Postfix mail server
+
+[Service]
+User=vmail
+ExecStart=/opt/postfix-rest-server/postfix-rest-server
+WorkingDirectory=/opt/postfix-rest-server
+SuccessExitStatus=0
+
+[Install]
+WantedBy=multi-user.target
