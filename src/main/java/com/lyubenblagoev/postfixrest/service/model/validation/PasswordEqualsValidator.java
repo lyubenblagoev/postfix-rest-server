@@ -1,7 +1,7 @@
 package com.lyubenblagoev.postfixrest.service.model.validation;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 import com.lyubenblagoev.postfixrest.service.model.AccountChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.PasswordConfirmable;

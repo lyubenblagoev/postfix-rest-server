@@ -1,7 +1,7 @@
 package com.lyubenblagoev.postfixrest.service.model;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 
 public class LoginRequest {
     @NotEmpty @Email private String login;

@@ -2,20 +2,22 @@ package com.lyubenblagoev.postfixrest.security;
 
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Date;
+import java.nio.charset.StandardCharsets;
+import javax.crypto.SecretKey;
 import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
 
-    @Value("${users.jwt.secret-key:secret}")
-    private String secretKey = "secret";
+    @Value("${users.jwt.secret-key:change-this-default-jwt-secret-key-before-production}")
+    private String secretKey = "change-this-default-jwt-secret-key-before-production";
 
     @Value("${users.jwt.expire-after-millis:900000}")
     private long validityInMilliseconds = 900000;
@@ -28,15 +30,13 @@ public class JwtTokenProvider {
                 .claim("auth", authorities.stream().map(a -> a.getAuthority()).collect(Collectors.toList()))
                 .setIssuedAt(now)
                 .setExpiration(validity)
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(signingKey())
                 .compact();
     }
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
-                    .setSigningKey(secretKey)
-                    .parseClaimsJws(token);
+            Jwts.parser().verifyWith(signingKey()).build().parseSignedClaims(token);
             return true;
         } catch (JwtException e) {
             return false;
@@ -44,11 +44,13 @@ public class JwtTokenProvider {
     }
 
     public String getUsername(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey)
-                .parseClaimsJws(token)
+        return Jwts.parser().verifyWith(signingKey()).build().parseSignedClaims(token)
                 .getBody()
                 .getSubject();
+    }
+
+    private SecretKey signingKey() {
+        return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
 }

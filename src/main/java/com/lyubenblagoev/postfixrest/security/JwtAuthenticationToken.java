@@ -2,12 +2,14 @@ package com.lyubenblagoev.postfixrest.security;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
+import java.util.List;
+
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
     private final String token;
 
     public JwtAuthenticationToken(String token) {
-        super(null);
+        super(List.of());
         this.token = token;
         setAuthenticated(false);
     }

@@ -6,13 +6,13 @@ Implemented in Java using Spring Boot.
 
 ## Requirements
 
-You need Java 11+ installed on the server. For building the project you need [Maven](https://maven.apache.org), as described in the following section.
+You need Java 17+ installed on the server. For building the project you need [Maven](https://maven.apache.org), as described in the following section.
 
 Out of the box it works with [PostgreSQL](https://www.postgresql.org) and [MySQL](https://www.mysql.com) based databases, but can also be used with other databases for which a suitable JDBC driver exist.
 
 To configure your mail server for Postfix REST Server you need the configuration files and database views provided in my [postfix-database](https://github.com/lyubenblagoev/postfix-database) project.
 
-Tested with Java 11+, PostgreSQL 10.2+ and MariaDB 10.1.14+.
+Tested with Java 17+, PostgreSQL 10.2+ and MariaDB 10.1.14+.
 
 ## Building the application
 
@@ -52,8 +52,8 @@ For security purposes the JWTs are valid for 15 minutes. If an invalid token is 
 Tokens' configuration and validity can be configured with the following properties in `application.properties`:
 
 ```properties
-# The JWT signing key (default: secret)
-users.jwt.secret-key=secret
+# The JWT signing key (use a random value of at least 32 bytes)
+users.jwt.secret-key=change-this-default-jwt-secret-key-before-production
 # The JWT validity time in milliseconds (default: 900000 (15 minutes))
 users.jwt.expire-after-millis=900000
 # The refresh token validity in days (default: 30 days)

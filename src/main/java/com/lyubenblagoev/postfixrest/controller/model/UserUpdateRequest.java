@@ -3,9 +3,9 @@ package com.lyubenblagoev.postfixrest.controller.model;
 import com.lyubenblagoev.postfixrest.service.model.PasswordConfirmable;
 import com.lyubenblagoev.postfixrest.service.model.validation.PasswordsMatches;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 
 @PasswordsMatches
 public class UserUpdateRequest implements PasswordConfirmable {

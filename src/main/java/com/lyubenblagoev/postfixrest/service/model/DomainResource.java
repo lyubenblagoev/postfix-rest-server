@@ -2,8 +2,8 @@ package com.lyubenblagoev.postfixrest.service.model;
 
 import java.util.Date;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lyubenblagoev.postfixrest.entity.Domain;

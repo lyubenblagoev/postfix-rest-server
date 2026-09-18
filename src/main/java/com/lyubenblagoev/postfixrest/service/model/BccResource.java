@@ -2,7 +2,7 @@ package com.lyubenblagoev.postfixrest.service.model;
 
 import java.util.Date;
 
-import javax.validation.constraints.Email;
+import jakarta.validation.constraints.Email;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lyubenblagoev.postfixrest.entity.Account;
