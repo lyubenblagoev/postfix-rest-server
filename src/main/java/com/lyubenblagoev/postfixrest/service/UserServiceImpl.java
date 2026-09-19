@@ -1,5 +1,6 @@
 package com.lyubenblagoev.postfixrest.service;
 
+import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
 import com.lyubenblagoev.postfixrest.entity.Device;
 import com.lyubenblagoev.postfixrest.entity.User;
 import com.lyubenblagoev.postfixrest.repository.UserRepository;
@@ -12,9 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import jakarta.persistence.EntityNotFoundException;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -24,11 +27,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     public UserServiceImpl(UserRepository userRepository,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           AuditLogService auditLogService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -57,6 +63,10 @@ public class UserServiceImpl implements UserService {
         User user = userRepository
                 .findById(id)
                 .orElse(new User(userChangeRequest.getEmail(), userChangeRequest.getPassword()));
+        boolean newEntity = user.getId() == null;
+        Map<String, ?> oldValues = userValues(user);
+        boolean passwordChanged = userChangeRequest.getPassword() != null
+                && !userChangeRequest.getPassword().isEmpty();
         if (user.getId() != null) {
             if (!userChangeRequest.getEmail().equalsIgnoreCase(user.getEmail())) {
                 Optional<User> existingLogin = userRepository.findByEmail(userChangeRequest.getEmail());
@@ -65,11 +75,18 @@ public class UserServiceImpl implements UserService {
                 }
             }
             user.setEmail(userChangeRequest.getEmail());
-            if (userChangeRequest.getPassword().length() > 0) {
+            if (passwordChanged) {
                 user.setPassword(passwordEncoder.encode(userChangeRequest.getPassword()));
             }
         }
         User savedUser = userRepository.save(user);
+        Map<String, ?> newValues = userValues(savedUser);
+        if (newEntity) {
+            auditLogService.recordCreated(AuditEntityType.USER, savedUser.getId(), newValues);
+        } else {
+            auditLogService.recordUpdated(AuditEntityType.USER, savedUser.getId(), oldValues, newValues,
+                    passwordChanged ? Set.of("password") : Set.of());
+        }
         return Optional.of(savedUser);
     }
 
@@ -138,6 +155,14 @@ public class UserServiceImpl implements UserService {
         }
         user.removeDevice(deviceOptional.get());
         userRepository.save(user);
+    }
+
+    private Map<String, ?> userValues(User user) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("email", user.getEmail());
+        values.put("enabled", user.isEnabled());
+        values.put("password", user.getPassword() == null ? null : AuditLogService.REDACTED_VALUE);
+        return values;
     }
 
 }

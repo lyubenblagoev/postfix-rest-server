@@ -121,7 +121,7 @@ public class BccController {
 
 	@DeleteMapping(value = "/incoming")
 	public ResponseEntity<?> deleteIncomingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account) {
-		return bccService.getOutgoingBcc(domain, account)
+		return bccService.getIncomingBcc(domain, account)
 				.map(bcc -> {
 					bccService.deleteIncomingBcc(bcc);
 					return ResponseEntity.ok().build();

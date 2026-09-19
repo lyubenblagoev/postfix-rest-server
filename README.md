@@ -45,6 +45,24 @@ When a user successfully logs in using their email address (login) and password,
 
     Authorization: Bearer eyJhbGci...<snip>...yu5CSpyHI
 
+### Audit log
+
+Changes to domains, accounts, aliases, BCC records, and users are recorded in the audit log. Passwords and refresh tokens are never stored in the log; password changes are shown as `[REDACTED]`.
+
+**Get the history for one resource**
+
+    GET /api/v1/audit-logs?entityType=DOMAIN&entityId=123
+
+The `entityType` values are `DOMAIN`, `ACCOUNT`, `ALIAS`, `INCOMING_BCC`, `OUTGOING_BCC`, and `USER`. The response is ordered newest first and contains the action, timestamp, acting user, resource identifier, and each changed field with its old and new value.
+
+**Get recent changes**
+
+    GET /api/v1/audit-logs?limit=50
+
+The optional `limit` is between 1 and 100. Supplying only `entityType` or only `entityId` is also supported for broader queries.
+
+When upgrading an existing installation, run the application once with the `updatedb` profile to create the audit tables before starting it with the default `validate` setting.
+
 The server will check for a valid authentication token in the Authorization header, and if it is present, the user will be allowed to access the protected resource.
 
 For security purposes the JWTs are valid for 15 minutes. If an invalid token is sent to the server, it will respond with HTTP status code 401. Clients can respond to this event by silently obtaining a new access token (JWT) using the user's login (email address), and the refresh token received from the server after successful login. If the provided refresh token is valid the server responds by returning a new authentication and refresh tokens. By default, refresh tokens are valid for 30 days after they are issued. 

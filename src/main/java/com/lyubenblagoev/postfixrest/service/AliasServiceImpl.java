@@ -2,6 +2,8 @@ package com.lyubenblagoev.postfixrest.service;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.lyubenblagoev.postfixrest.NotFoundException;
+import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
 import com.lyubenblagoev.postfixrest.entity.Alias;
 import com.lyubenblagoev.postfixrest.repository.AliasRepository;
 import com.lyubenblagoev.postfixrest.repository.DomainRepository;
@@ -21,10 +24,13 @@ public class AliasServiceImpl implements AliasService {
 	
 	private final AliasRepository aliasRepository;
 	private final DomainRepository domainRepository;
+	private final AuditLogService auditLogService;
 	
-	public AliasServiceImpl(AliasRepository aliasRepository, DomainRepository domainRepository) {
+	public AliasServiceImpl(AliasRepository aliasRepository, DomainRepository domainRepository,
+			AuditLogService auditLogService) {
 		this.aliasRepository = aliasRepository;
 		this.domainRepository = domainRepository;
+		this.auditLogService = auditLogService;
 	}
 	
 	@Override
@@ -60,6 +66,8 @@ public class AliasServiceImpl implements AliasService {
 	public Optional<AliasResource> save(AliasChangeRequest alias) {
 		Long id = Optional.ofNullable(alias.getId()).orElse(-1L);
 		Alias existingAlias = aliasRepository.findById(id).orElse(new Alias());
+		boolean newEntity = existingAlias.getId() == null;
+		Map<String, ?> oldValues = aliasValues(existingAlias);
 		return domainRepository.findById(alias.getDomainId())
 				.map(domain -> {
 					Optional<Alias> sameAlias = aliasRepository.findByDomainNameAndAliasAndEmail(
@@ -75,6 +83,12 @@ public class AliasServiceImpl implements AliasService {
 						existingAlias.setEnabled(alias.getEnabled());
 					}
 					Alias saved = aliasRepository.save(existingAlias);
+					Map<String, ?> newValues = aliasValues(saved);
+					if (newEntity) {
+						auditLogService.recordCreated(AuditEntityType.ALIAS, saved.getId(), newValues);
+					} else {
+						auditLogService.recordUpdated(AuditEntityType.ALIAS, saved.getId(), oldValues, newValues);
+					}
 					return Optional.of(AliasResource.fromAlias(saved));
 				})
 				.orElse(Optional.empty());
@@ -85,7 +99,9 @@ public class AliasServiceImpl implements AliasService {
 	public void delete(String domain, String name, String email) {
 		Optional<Alias> existingAlias = aliasRepository.findByDomainNameAndAliasAndEmail(domain, name, email);
 		if (existingAlias.isPresent()) {
-			aliasRepository.delete(existingAlias.get());
+			Alias entity = existingAlias.get();
+			aliasRepository.delete(entity);
+			auditLogService.recordDeleted(AuditEntityType.ALIAS, entity.getId(), aliasValues(entity));
 		} else {
 			throw new NotFoundException("Alias not found.");
 		}
@@ -98,7 +114,19 @@ public class AliasServiceImpl implements AliasService {
 		if (existingAliases.isEmpty()) {
 			throw new NotFoundException("No aliases exist for the specified parameters");
 		}
-		existingAliases.forEach(aliasRepository::delete);
+		existingAliases.forEach(alias -> {
+			aliasRepository.delete(alias);
+			auditLogService.recordDeleted(AuditEntityType.ALIAS, alias.getId(), aliasValues(alias));
+		});
+	}
+
+	private Map<String, ?> aliasValues(Alias alias) {
+		Map<String, Object> values = new LinkedHashMap<>();
+		values.put("domainId", alias.getDomain() == null ? null : alias.getDomain().getId());
+		values.put("name", alias.getAlias());
+		values.put("email", alias.getEmail());
+		values.put("enabled", alias.isEnabled());
+		return values;
 	}
 
 }
