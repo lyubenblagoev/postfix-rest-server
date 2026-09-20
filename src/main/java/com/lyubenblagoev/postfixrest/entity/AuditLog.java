@@ -22,7 +22,9 @@ import java.util.List;
 @Entity
 @Table(name = "audit_logs", indexes = {
         @Index(name = "idx_audit_entity_history", columnList = "entity_type, entity_id, occurred_at"),
-        @Index(name = "idx_audit_recent", columnList = "occurred_at")
+        @Index(name = "idx_audit_recent", columnList = "occurred_at"),
+        @Index(name = "idx_audit_domain_scope", columnList = "domain_id, occurred_at"),
+        @Index(name = "idx_audit_account_scope", columnList = "account_id, occurred_at")
 })
 public class AuditLog {
 
@@ -40,6 +42,14 @@ public class AuditLog {
 
     @Column(name = "entity_id", nullable = false)
     private Long entityId;
+
+    // Parent account used to include this entry in account-scoped activity; not the audited resource ID.
+    @Column(name = "account_id")
+    private Long scopeAccountId;
+
+    // Parent domain used to include this entry in domain-scoped activity; not the audited resource ID.
+    @Column(name = "domain_id")
+    private Long scopeDomainId;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "occurred_at", nullable = false)
@@ -87,6 +97,22 @@ public class AuditLog {
 
     public void setEntityId(Long entityId) {
         this.entityId = entityId;
+    }
+
+    public Long getScopeAccountId() {
+        return scopeAccountId;
+    }
+
+    public void setScopeAccountId(Long scopeAccountId) {
+        this.scopeAccountId = scopeAccountId;
+    }
+
+    public Long getScopeDomainId() {
+        return scopeDomainId;
+    }
+
+    public void setScopeDomainId(Long scopeDomainId) {
+        this.scopeDomainId = scopeDomainId;
     }
 
     public Date getOccurredAt() {

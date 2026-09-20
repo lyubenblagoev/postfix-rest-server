@@ -4,6 +4,7 @@ import com.lyubenblagoev.postfixrest.entity.AuditAction;
 import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
 import com.lyubenblagoev.postfixrest.entity.AuditLog;
 import com.lyubenblagoev.postfixrest.entity.AuditLogChange;
+import com.lyubenblagoev.postfixrest.entity.AuditScope;
 import com.lyubenblagoev.postfixrest.repository.AuditLogRepository;
 import com.lyubenblagoev.postfixrest.security.UserPrincipal;
 import com.lyubenblagoev.postfixrest.service.model.AuditLogResource;
@@ -26,6 +27,15 @@ import java.util.stream.Collectors;
 public class AuditLogServiceImpl implements AuditLogService {
 
     private static final String SYSTEM_USER = "system";
+    private static final List<AuditEntityType> DOMAIN_ACTIVITY_TYPES = List.of(
+            AuditEntityType.ACCOUNT,
+            AuditEntityType.ALIAS,
+            AuditEntityType.INCOMING_BCC,
+            AuditEntityType.OUTGOING_BCC);
+    private static final List<AuditEntityType> ACCOUNT_ACTIVITY_TYPES = List.of(
+            AuditEntityType.ACCOUNT,
+            AuditEntityType.INCOMING_BCC,
+            AuditEntityType.OUTGOING_BCC);
 
     private final AuditLogRepository auditLogRepository;
 
@@ -76,12 +86,27 @@ public class AuditLogServiceImpl implements AuditLogService {
         return logs.stream().map(AuditLogResource::fromAuditLog).collect(Collectors.toList());
     }
 
+    @Override
+    public List<AuditLogResource> find(AuditScope scope, Long scopeId, int limit) {
+        PageRequest pageRequest = PageRequest.of(0, limit);
+        List<AuditEntityType> entityTypes = scope == AuditScope.DOMAIN
+                ? DOMAIN_ACTIVITY_TYPES : ACCOUNT_ACTIVITY_TYPES;
+        List<AuditLog> logs = scope == AuditScope.DOMAIN
+                ? auditLogRepository.findByScopeDomainIdAndEntityTypeInOrderByOccurredAtDescIdDesc(scopeId,
+                        entityTypes, pageRequest)
+                : auditLogRepository.findByScopeAccountIdAndEntityTypeInOrderByOccurredAtDescIdDesc(scopeId,
+                        entityTypes, pageRequest);
+        return logs.stream().map(AuditLogResource::fromAuditLog).collect(Collectors.toList());
+    }
+
     private void record(AuditAction action, AuditEntityType entityType, Long entityId,
                         Map<String, ?> oldValues, Map<String, ?> newValues, Set<String> changedFields) {
         AuditLog auditLog = new AuditLog();
         auditLog.setAction(action);
         auditLog.setEntityType(entityType);
         auditLog.setEntityId(entityId);
+        auditLog.setScopeAccountId(scopeId(entityType, entityId, "accountId", oldValues, newValues));
+        auditLog.setScopeDomainId(scopeId(entityType, entityId, "domainId", oldValues, newValues));
         auditLog.setOccurredAt(new Date());
         setActor(auditLog);
 
@@ -101,6 +126,21 @@ public class AuditLogServiceImpl implements AuditLogService {
         if (action != AuditAction.UPDATED || !auditLog.getChanges().isEmpty()) {
             auditLogRepository.save(auditLog);
         }
+    }
+
+    private Long scopeId(AuditEntityType entityType, Long entityId, String field,
+                         Map<String, ?> oldValues, Map<String, ?> newValues) {
+        Object value = newValues.containsKey(field) ? newValues.get(field) : oldValues.get(field);
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (entityType == AuditEntityType.ACCOUNT && "accountId".equals(field)) {
+            return entityId;
+        }
+        if (entityType == AuditEntityType.DOMAIN && "domainId".equals(field)) {
+            return entityId;
+        }
+        return null;
     }
 
     private void setActor(AuditLog auditLog) {

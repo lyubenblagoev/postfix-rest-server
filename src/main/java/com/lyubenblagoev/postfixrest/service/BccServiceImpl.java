@@ -126,7 +126,9 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 		if (bcc == null) {
 			return values;
 		}
-		values.put("accountId", bcc.getAccount() == null ? null : bcc.getAccount().getId());
+		Account account = bcc.getAccount();
+		values.put("accountId", account == null ? null : account.getId());
+		values.put("domainId", account == null || account.getDomain() == null ? null : account.getDomain().getId());
 		values.put("email", bcc.getReceiverEmailAddress());
 		values.put("enabled", bcc.isEnabled());
 		return values;

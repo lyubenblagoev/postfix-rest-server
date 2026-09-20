@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.service;
 
 import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
+import com.lyubenblagoev.postfixrest.entity.AuditScope;
 import com.lyubenblagoev.postfixrest.service.model.AuditLogResource;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface AuditLogService {
     void recordDeleted(AuditEntityType entityType, Long entityId, Map<String, ?> oldValues);
 
     List<AuditLogResource> find(AuditEntityType entityType, Long entityId, int limit);
+
+    List<AuditLogResource> find(AuditScope scope, Long scopeId, int limit);
 }

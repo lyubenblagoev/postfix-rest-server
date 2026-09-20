@@ -1,6 +1,8 @@
 package com.lyubenblagoev.postfixrest.controller;
 
+import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
+import com.lyubenblagoev.postfixrest.entity.AuditScope;
 import com.lyubenblagoev.postfixrest.service.AuditLogService;
 import com.lyubenblagoev.postfixrest.service.model.AuditLogResource;
 import jakarta.validation.constraints.Max;
@@ -28,7 +30,15 @@ public class AuditLogController {
     public List<AuditLogResource> query(
             @RequestParam(required = false) AuditEntityType entityType,
             @RequestParam(required = false) Long entityId,
+            @RequestParam(required = false) AuditScope scope,
+            @RequestParam(required = false) @Min(1) Long scopeId,
             @RequestParam(defaultValue = "50") @Min(1) @Max(100) int limit) {
+        if ((scope == null) != (scopeId == null)) {
+            throw new BadRequestException("scope and scopeId must be provided together");
+        }
+        if (scope != null) {
+            return auditLogService.find(scope, scopeId, limit);
+        }
         return auditLogService.find(entityType, entityId, limit);
     }
 }

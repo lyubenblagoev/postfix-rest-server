@@ -61,7 +61,14 @@ The `entityType` values are `DOMAIN`, `ACCOUNT`, `ALIAS`, `INCOMING_BCC`, `OUTGO
 
 The optional `limit` is between 1 and 100. Supplying only `entityType` or only `entityId` is also supported for broader queries.
 
-When upgrading an existing installation, run the application once with the `updatedb` profile to create the audit tables before starting it with the default `validate` setting.
+**Get activity for a domain or account**
+
+    GET /api/v1/audit-logs?scope=DOMAIN&scopeId=123&limit=50
+    GET /api/v1/audit-logs?scope=ACCOUNT&scopeId=456&limit=50
+
+The `DOMAIN` scope includes account, alias, incoming BCC, and outgoing BCC activity for the domain. The `ACCOUNT` scope includes account and BCC activity for the account. Each entry keeps its original entity type and entity ID.
+
+When upgrading an existing installation, run the application once with the `updatedb` profile to create or update the audit tables before starting it with the default `validate` setting. The audit-log scope backfill is enabled only by the `updatedb` profile, so it runs during that explicit migration startup and never during normal application startup. A versioned completion marker makes the backfill idempotent; rerunning `updatedb` performs only the marker check unless a future backfill version is introduced. Rows that never retained a parent identifier cannot be reconstructed.
 
 The server will check for a valid authentication token in the Authorization header, and if it is present, the user will be allowed to access the protected resource.
 
