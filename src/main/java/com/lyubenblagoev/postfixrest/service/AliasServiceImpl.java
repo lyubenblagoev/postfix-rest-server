@@ -123,6 +123,7 @@ public class AliasServiceImpl implements AliasService {
 	private Map<String, ?> aliasValues(Alias alias) {
 		Map<String, Object> values = new LinkedHashMap<>();
 		values.put("domainId", alias.getDomain() == null ? null : alias.getDomain().getId());
+		values.put("domainName", alias.getDomain() == null ? null : alias.getDomain().getName());
 		values.put("name", alias.getAlias());
 		values.put("email", alias.getEmail());
 		values.put("enabled", alias.isEnabled());

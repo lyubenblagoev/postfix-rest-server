@@ -5,7 +5,6 @@ import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
 import com.lyubenblagoev.postfixrest.entity.AuditLog;
 import com.lyubenblagoev.postfixrest.entity.AuditLogChange;
 import com.lyubenblagoev.postfixrest.entity.AuditLogScopeBackfillState;
-import com.lyubenblagoev.postfixrest.repository.AccountRepository;
 import com.lyubenblagoev.postfixrest.repository.AuditLogRepository;
 import com.lyubenblagoev.postfixrest.repository.AuditLogScopeBackfillStateRepository;
 import org.junit.jupiter.api.Test;
@@ -30,9 +29,6 @@ class AuditLogScopeBackfillTest {
     private AuditLogRepository auditLogRepository;
 
     @Mock
-    private AccountRepository accountRepository;
-
-    @Mock
     private AuditLogScopeBackfillStateRepository stateRepository;
 
     @Test
@@ -42,15 +38,16 @@ class AuditLogScopeBackfillTest {
 
         AuditLog bccLog = auditLog(AuditAction.DELETED, AuditEntityType.OUTGOING_BCC, 99L, 2_000L);
         bccLog.addChange(new AuditLogChange("accountId", "42", null));
+        bccLog.addChange(new AuditLogChange("email", "bcc@example.net", null));
 
         when(auditLogRepository.findAll()).thenReturn(List.of(accountLog, bccLog));
-        when(accountRepository.findAll()).thenReturn(List.of());
         when(stateRepository.findById(1L)).thenReturn(Optional.empty());
 
-        new AuditLogScopeBackfill(auditLogRepository, accountRepository, stateRepository).run(null);
+        new AuditLogScopeBackfill(auditLogRepository, stateRepository).run(null);
 
         assertEquals(42L, bccLog.getScopeAccountId());
         assertEquals(7L, bccLog.getScopeDomainId());
+        assertEquals("bcc@example.net", bccLog.getResourceIdentifier());
         verify(auditLogRepository).saveAll(anyList());
         verify(stateRepository).save(org.mockito.ArgumentMatchers.any(AuditLogScopeBackfillState.class));
     }
@@ -58,11 +55,27 @@ class AuditLogScopeBackfillTest {
     @Test
     void run_whenCurrentVersionAlreadyCompleted_shouldSkipFullBackfill() throws Exception {
         when(stateRepository.findById(1L))
-                .thenReturn(Optional.of(new AuditLogScopeBackfillState(1L, 1, new Date())));
+                .thenReturn(Optional.of(new AuditLogScopeBackfillState(1L, 2, new Date())));
 
-        new AuditLogScopeBackfill(auditLogRepository, accountRepository, stateRepository).run(null);
+        new AuditLogScopeBackfill(auditLogRepository, stateRepository).run(null);
 
-        verifyNoInteractions(auditLogRepository, accountRepository);
+        verifyNoInteractions(auditLogRepository);
+    }
+
+    @Test
+    void run_whenBccDomainCannotBeRecovered_shouldLeaveDomainScopeUnset() throws Exception {
+        AuditLog bccLog = auditLog(AuditAction.DELETED, AuditEntityType.OUTGOING_BCC, 99L, 2_000L);
+        bccLog.addChange(new AuditLogChange("accountId", "42", null));
+        bccLog.addChange(new AuditLogChange("email", "bcc@example.net", null));
+
+        when(auditLogRepository.findAll()).thenReturn(List.of(bccLog));
+        when(stateRepository.findById(1L)).thenReturn(Optional.empty());
+
+        new AuditLogScopeBackfill(auditLogRepository, stateRepository).run(null);
+
+        assertEquals(42L, bccLog.getScopeAccountId());
+        org.junit.jupiter.api.Assertions.assertNull(bccLog.getScopeDomainId());
+        assertEquals("bcc@example.net", bccLog.getResourceIdentifier());
     }
 
     private AuditLog auditLog(AuditAction action, AuditEntityType entityType, Long entityId, long timestamp) {

@@ -127,6 +127,7 @@ public class DomainServiceImpl implements DomainService {
 		Map<String, Object> values = new LinkedHashMap<>();
 		values.put("username", account.getUsername());
 		values.put("domainId", account.getDomain() == null ? null : account.getDomain().getId());
+		values.put("domainName", account.getDomain() == null ? null : account.getDomain().getName());
 		values.put("enabled", account.isEnabled());
 		values.put("password", account.getPassword() == null ? null : AuditLogService.REDACTED_VALUE);
 		return values;
@@ -135,6 +136,7 @@ public class DomainServiceImpl implements DomainService {
 	private Map<String, ?> aliasValues(Alias alias) {
 		Map<String, Object> values = new LinkedHashMap<>();
 		values.put("domainId", alias.getDomain() == null ? null : alias.getDomain().getId());
+		values.put("domainName", alias.getDomain() == null ? null : alias.getDomain().getName());
 		values.put("name", alias.getAlias());
 		values.put("email", alias.getEmail());
 		values.put("enabled", alias.isEnabled());

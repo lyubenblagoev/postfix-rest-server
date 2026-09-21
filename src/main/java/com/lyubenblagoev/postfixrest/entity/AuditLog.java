@@ -43,6 +43,10 @@ public class AuditLog {
     @Column(name = "entity_id", nullable = false)
     private Long entityId;
 
+    // Historical identifier captured when the audited resource was changed; does not depend on current resources.
+    @Column(name = "resource_identifier", length = 1024)
+    private String resourceIdentifier;
+
     // Parent account used to include this entry in account-scoped activity; not the audited resource ID.
     @Column(name = "account_id")
     private Long scopeAccountId;
@@ -97,6 +101,14 @@ public class AuditLog {
 
     public void setEntityId(Long entityId) {
         this.entityId = entityId;
+    }
+
+    public String getResourceIdentifier() {
+        return resourceIdentifier;
+    }
+
+    public void setResourceIdentifier(String resourceIdentifier) {
+        this.resourceIdentifier = resourceIdentifier;
     }
 
     public Long getScopeAccountId() {

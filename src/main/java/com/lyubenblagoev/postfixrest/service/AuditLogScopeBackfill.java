@@ -5,7 +5,6 @@ import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
 import com.lyubenblagoev.postfixrest.entity.AuditLog;
 import com.lyubenblagoev.postfixrest.entity.AuditLogChange;
 import com.lyubenblagoev.postfixrest.entity.AuditLogScopeBackfillState;
-import com.lyubenblagoev.postfixrest.repository.AccountRepository;
 import com.lyubenblagoev.postfixrest.repository.AuditLogRepository;
 import com.lyubenblagoev.postfixrest.repository.AuditLogScopeBackfillStateRepository;
 import org.slf4j.Logger;
@@ -29,17 +28,15 @@ import java.util.Optional;
 public class AuditLogScopeBackfill implements ApplicationRunner {
 
     private static final Long STATE_ID = 1L;
-    private static final int BACKFILL_VERSION = 1;
+    private static final int BACKFILL_VERSION = 2;
     private static final Logger logger = LoggerFactory.getLogger(AuditLogScopeBackfill.class);
 
     private final AuditLogRepository auditLogRepository;
-    private final AccountRepository accountRepository;
     private final AuditLogScopeBackfillStateRepository stateRepository;
 
-    public AuditLogScopeBackfill(AuditLogRepository auditLogRepository, AccountRepository accountRepository,
+    public AuditLogScopeBackfill(AuditLogRepository auditLogRepository,
                                  AuditLogScopeBackfillStateRepository stateRepository) {
         this.auditLogRepository = auditLogRepository;
-        this.accountRepository = accountRepository;
         this.stateRepository = stateRepository;
     }
 
@@ -53,7 +50,6 @@ public class AuditLogScopeBackfill implements ApplicationRunner {
 
         List<AuditLog> logs = auditLogRepository.findAll();
         Map<Long, List<AccountScopeEvent>> accountHistory = accountHistory(logs);
-        Map<Long, Long> currentAccountDomains = currentAccountDomains();
         Map<AuditEntityType, Map<Long, Long>> bccAccountIds = bccAccountIds(logs);
         List<AuditLog> updatedLogs = new ArrayList<>();
 
@@ -82,11 +78,16 @@ public class AuditLogScopeBackfill implements ApplicationRunner {
                 if (domainId == null && accountId != null) {
                     domainId = historicalAccountDomain(accountHistory.get(accountId), log);
                 }
-                if (domainId == null && accountId != null) {
-                    domainId = currentAccountDomains.get(accountId);
-                }
                 if (domainId != null) {
                     log.setScopeDomainId(domainId);
+                    updated = true;
+                }
+            }
+
+            if (log.getResourceIdentifier() == null) {
+                String resourceIdentifier = resourceIdentifier(log);
+                if (resourceIdentifier != null) {
+                    log.setResourceIdentifier(resourceIdentifier);
                     updated = true;
                 }
             }
@@ -146,16 +147,6 @@ public class AuditLogScopeBackfill implements ApplicationRunner {
                 || log.getEntityType() == AuditEntityType.OUTGOING_BCC;
     }
 
-    private Map<Long, Long> currentAccountDomains() {
-        Map<Long, Long> domains = new HashMap<>();
-        accountRepository.findAll().forEach(account -> {
-            if (account.getDomain() != null) {
-                domains.put(account.getId(), account.getDomain().getId());
-            }
-        });
-        return domains;
-    }
-
     private Long historicalAccountDomain(List<AccountScopeEvent> history, AuditLog bccLog) {
         if (history == null) {
             return null;
@@ -189,6 +180,42 @@ public class AuditLogScopeBackfill implements ApplicationRunner {
                 value = change.getOldValue();
             }
             return parseLong(value);
+        }
+        return null;
+    }
+
+    private String resourceIdentifier(AuditLog log) {
+        return switch (log.getEntityType()) {
+            case DOMAIN -> snapshotText(log, "name");
+            case ACCOUNT -> mailboxIdentifier(log);
+            case ALIAS -> aliasIdentifier(log);
+            case INCOMING_BCC, OUTGOING_BCC -> snapshotText(log, "email");
+            case USER -> snapshotText(log, "email");
+        };
+    }
+
+    private String mailboxIdentifier(AuditLog log) {
+        String username = snapshotText(log, "username");
+        String domainName = snapshotText(log, "domainName");
+        return username == null || domainName == null ? null : username + "@" + domainName;
+    }
+
+    private String aliasIdentifier(AuditLog log) {
+        String aliasName = snapshotText(log, "name");
+        String domainName = snapshotText(log, "domainName");
+        String recipient = snapshotText(log, "email");
+        return aliasName == null || domainName == null || recipient == null
+                ? null : aliasName + "@" + domainName + " -> " + recipient;
+    }
+
+    private String snapshotText(AuditLog log, String fieldName) {
+        for (AuditLogChange change : log.getChanges()) {
+            if (!fieldName.equals(change.getFieldName())) {
+                continue;
+            }
+            String value = log.getAction() == AuditAction.DELETED
+                    ? change.getOldValue() : change.getNewValue();
+            return value == null ? change.getOldValue() : value;
         }
         return null;
     }

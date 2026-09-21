@@ -126,6 +126,7 @@ public class AccountServiceImpl implements AccountService {
 		Map<String, Object> values = new LinkedHashMap<>();
 		values.put("username", account.getUsername());
 		values.put("domainId", account.getDomain() == null ? null : account.getDomain().getId());
+		values.put("domainName", account.getDomain() == null ? null : account.getDomain().getName());
 		values.put("enabled", account.isEnabled());
 		values.put("password", account.getPassword() == null ? null : AuditLogService.REDACTED_VALUE);
 		return values;

@@ -2,12 +2,14 @@ package com.lyubenblagoev.postfixrest.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "aliases")
+@Table(name = "aliases", indexes = @Index(name = "idx_alias_domain_name_enabled",
+		columnList = "domain_id, alias, enabled"))
 public class Alias extends BaseEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)

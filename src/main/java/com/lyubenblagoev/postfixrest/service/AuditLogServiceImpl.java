@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 public class AuditLogServiceImpl implements AuditLogService {
 
     private static final String SYSTEM_USER = "system";
+    private static final String DOMAIN_NAME_FIELD = "domainName";
     private static final List<AuditEntityType> DOMAIN_ACTIVITY_TYPES = List.of(
             AuditEntityType.ACCOUNT,
             AuditEntityType.ALIAS,
@@ -105,6 +106,7 @@ public class AuditLogServiceImpl implements AuditLogService {
         auditLog.setAction(action);
         auditLog.setEntityType(entityType);
         auditLog.setEntityId(entityId);
+        auditLog.setResourceIdentifier(resourceIdentifier(action, entityType, oldValues, newValues));
         auditLog.setScopeAccountId(scopeId(entityType, entityId, "accountId", oldValues, newValues));
         auditLog.setScopeDomainId(scopeId(entityType, entityId, "domainId", oldValues, newValues));
         auditLog.setOccurredAt(new Date());
@@ -114,6 +116,9 @@ public class AuditLogServiceImpl implements AuditLogService {
         fields.addAll(oldValues.keySet());
         fields.addAll(newValues.keySet());
         for (String field : fields) {
+            if (DOMAIN_NAME_FIELD.equals(field)) {
+                continue;
+            }
             Object oldValue = oldValues.get(field);
             Object newValue = newValues.get(field);
             if (action == AuditAction.UPDATED && !changedFields.contains(field)
@@ -141,6 +146,37 @@ public class AuditLogServiceImpl implements AuditLogService {
             return entityId;
         }
         return null;
+    }
+
+    private String resourceIdentifier(AuditAction action, AuditEntityType entityType,
+                                      Map<String, ?> oldValues, Map<String, ?> newValues) {
+        Map<String, ?> values = action == AuditAction.DELETED ? oldValues : newValues;
+        return switch (entityType) {
+            case DOMAIN -> stringValue(values, "name");
+            case ACCOUNT -> mailboxIdentifier(values);
+            case ALIAS -> aliasIdentifier(values);
+            case INCOMING_BCC, OUTGOING_BCC -> stringValue(values, "email");
+            case USER -> stringValue(values, "email");
+        };
+    }
+
+    private String mailboxIdentifier(Map<String, ?> values) {
+        String username = stringValue(values, "username");
+        String domainName = stringValue(values, DOMAIN_NAME_FIELD);
+        return username == null || domainName == null ? null : username + "@" + domainName;
+    }
+
+    private String aliasIdentifier(Map<String, ?> values) {
+        String aliasName = stringValue(values, "name");
+        String domainName = stringValue(values, DOMAIN_NAME_FIELD);
+        String recipient = stringValue(values, "email");
+        return aliasName == null || domainName == null || recipient == null
+                ? null : aliasName + "@" + domainName + " -> " + recipient;
+    }
+
+    private String stringValue(Map<String, ?> values, String fieldName) {
+        Object value = values.get(fieldName);
+        return value == null ? null : String.valueOf(value);
     }
 
     private void setActor(AuditLog auditLog) {

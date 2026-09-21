@@ -45,6 +45,29 @@ When a user successfully logs in using their email address (login) and password,
 
     Authorization: Bearer eyJhbGci...<snip>...yu5CSpyHI
 
+### Domain summaries
+
+The aggregate domain endpoints return domain metadata together with account and alias counts without returning account, alias, recipient, or BCC records:
+
+    GET /api/v1/domain-summaries
+    GET /api/v1/domain-summaries/{domain}
+
+Each response object has this shape:
+
+```json
+{
+  "id": 123,
+  "name": "example.com",
+  "enabled": true,
+  "created": "2026-01-01T12:00:00+0000",
+  "updated": "2026-01-02T12:00:00+0000",
+  "accounts": { "total": 3, "enabled": 2, "disabled": 1 },
+  "aliases": { "total": 2, "healthy": 1, "needsReview": 1, "paused": 0 }
+}
+```
+
+Account counts are calculated from account rows. Alias counts are calculated by distinct alias name: an alias is `healthy` when all recipients are enabled, `paused` when all are disabled, and `needsReview` when enabled and disabled recipients are mixed. Empty domains return zero counts. The collection is ordered by domain name. A missing domain returns HTTP 404. These endpoints require the same authentication as the other `/api/v1/**` endpoints.
+
 ### Audit log
 
 Changes to domains, accounts, aliases, BCC records, and users are recorded in the audit log. Passwords and refresh tokens are never stored in the log; password changes are shown as `[REDACTED]`.
@@ -68,7 +91,9 @@ The optional `limit` is between 1 and 100. Supplying only `entityType` or only `
 
 The `DOMAIN` scope includes account, alias, incoming BCC, and outgoing BCC activity for the domain. The `ACCOUNT` scope includes account and BCC activity for the account. Each entry keeps its original entity type and entity ID.
 
-When upgrading an existing installation, run the application once with the `updatedb` profile to create or update the audit tables before starting it with the default `validate` setting. The audit-log scope backfill is enabled only by the `updatedb` profile, so it runs during that explicit migration startup and never during normal application startup. A versioned completion marker makes the backfill idempotent; rerunning `updatedb` performs only the marker check unless a future backfill version is introduced. Rows that never retained a parent identifier cannot be reconstructed.
+New audit entries contain a persisted `resourceIdentifier`, so scoped retrieval does not need to load current account or alias resources. Identifiers use these formats: `DOMAIN` uses the domain name; `ACCOUNT` uses the complete mailbox address; `ALIAS` uses `alias@domain -> recipient`; and BCC entries use the configured BCC address. Created and deleted entries retain the corresponding historical identifier. For renamed resources, the updated entry contains the new identifier and its changes contain the previous value. The `updatedb` backfill populates identifiers for legacy entries when their audit snapshots contain enough historical data; otherwise `resourceIdentifier` remains null rather than being reconstructed from current resources.
+
+When upgrading an existing installation, run the application once with the `updatedb` profile to create or update the audit tables before starting it with the default `validate` setting. The audit-log scope backfill is enabled only by the `updatedb` profile, so it runs during that explicit migration startup and never during normal application startup. A versioned completion marker makes the backfill idempotent; rerunning `updatedb` performs only the marker check unless a future backfill version is introduced. Rows that never retained the required historical parent or identifier values remain unset; the backfill does not guess from current resources.
 
 The server will check for a valid authentication token in the Authorization header, and if it is present, the user will be allowed to access the protected resource.
 

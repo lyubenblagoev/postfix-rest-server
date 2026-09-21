@@ -15,6 +15,7 @@ public class AuditLogResource {
     private AuditAction action;
     private AuditEntityType entityType;
     private Long entityId;
+    private String resourceIdentifier;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssZ")
     private Date timestamp;
@@ -29,6 +30,7 @@ public class AuditLogResource {
         resource.action = auditLog.getAction();
         resource.entityType = auditLog.getEntityType();
         resource.entityId = auditLog.getEntityId();
+        resource.resourceIdentifier = auditLog.getResourceIdentifier();
         resource.timestamp = auditLog.getOccurredAt();
         resource.userId = auditLog.getActorUserId();
         resource.user = auditLog.getActorUsername();
@@ -53,6 +55,10 @@ public class AuditLogResource {
 
     public Long getEntityId() {
         return entityId;
+    }
+
+    public String getResourceIdentifier() {
+        return resourceIdentifier;
     }
 
     public Date getTimestamp() {

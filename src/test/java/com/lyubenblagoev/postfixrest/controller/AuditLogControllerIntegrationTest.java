@@ -79,6 +79,7 @@ class AuditLogControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].action", is("UPDATED")))
                 .andExpect(jsonPath("$[0].entityType", is("DOMAIN")))
                 .andExpect(jsonPath("$[0].entityId", is(domainId.intValue())))
+                .andExpect(jsonPath("$[0].resourceIdentifier", is(DOMAIN_NAME)))
                 .andExpect(jsonPath("$[0].user", is("admin@example.com")))
                 .andExpect(jsonPath("$[0].changes", hasSize(1)))
                 .andExpect(jsonPath("$[0].changes[0].field", is("enabled")))
@@ -112,6 +113,11 @@ class AuditLogControllerIntegrationTest {
                         .header("Authorization", authorization)
                         .content("{ \"name\": \"info\", \"email\": \"target@example.net\", \"enabled\": true }"))
                 .andExpect(status().isOk());
+        mockMvc.perform(put(DOMAINS_PATH + "/" + domainName + "/aliases/info/target@example.net")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .content("{ \"name\": \"support\", \"email\": \"destination@example.net\", \"enabled\": true }"))
+                .andExpect(status().isOk());
         mockMvc.perform(post(DOMAINS_PATH + "/" + domainName + "/accounts/" + accountName + "/bccs/incoming")
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", authorization)
@@ -123,8 +129,24 @@ class AuditLogControllerIntegrationTest {
                         .content("{ \"email\": \"outgoing@example.net\", \"enabled\": true }"))
                 .andExpect(status().isOk());
 
+        mockMvc.perform(put(DOMAINS_PATH + "/" + domainName + "/accounts/" + accountName)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", authorization)
+                        .content("{ \"username\": \"alice-renamed\", \"enabled\": true }"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete(DOMAINS_PATH + "/" + domainName + "/aliases/support/destination@example.net")
+                        .header("Authorization", authorization))
+                .andExpect(status().isOk());
+
         Long outgoingBccId = outgoingBccRepository.findByAccountId(accountId).getId();
-        mockMvc.perform(delete(DOMAINS_PATH + "/" + domainName + "/accounts/" + accountName + "/bccs/outgoing")
+        mockMvc.perform(delete(DOMAINS_PATH + "/" + domainName + "/accounts/alice-renamed/bccs/outgoing")
+                        .header("Authorization", authorization))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete(DOMAINS_PATH + "/" + domainName + "/accounts/alice-renamed/bccs/incoming")
+                        .header("Authorization", authorization))
+                .andExpect(status().isOk());
+        mockMvc.perform(delete(DOMAINS_PATH + "/" + domainName + "/accounts/alice-renamed")
                         .header("Authorization", authorization))
                 .andExpect(status().isOk());
 
@@ -133,21 +155,33 @@ class AuditLogControllerIntegrationTest {
                         .param("scopeId", domainId.toString())
                         .header("Authorization", authorization))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(5)))
+                .andExpect(jsonPath("$", hasSize(10)))
                 .andExpect(jsonPath("$[*].entityType", containsInAnyOrder(
-                        "ACCOUNT", "ALIAS", "INCOMING_BCC", "OUTGOING_BCC", "OUTGOING_BCC")))
+                        "ACCOUNT", "ACCOUNT", "ACCOUNT", "ALIAS", "ALIAS", "ALIAS",
+                        "INCOMING_BCC", "INCOMING_BCC", "OUTGOING_BCC", "OUTGOING_BCC")))
                 .andExpect(jsonPath("$[0].action", is("DELETED")))
-                .andExpect(jsonPath("$[0].entityId", is(outgoingBccId.intValue())))
-                .andExpect(jsonPath("$[0].changes[*].field", hasItems("accountId", "domainId")));
+                .andExpect(jsonPath("$[0].resourceIdentifier", is("alice-renamed@" + domainName)))
+                .andExpect(jsonPath("$[*].resourceIdentifier", hasItems(
+                        accountName + "@" + domainName,
+                        "alice-renamed@" + domainName,
+                        "info@" + domainName + " -> target@example.net",
+                        "support@" + domainName + " -> destination@example.net",
+                        "incoming@example.net", "outgoing@example.net")))
+                .andExpect(jsonPath("$[2].entityId", is(outgoingBccId.intValue())))
+                .andExpect(jsonPath("$[2].resourceIdentifier", is("outgoing@example.net")))
+                .andExpect(jsonPath("$[2].changes[*].field", hasItems("accountId", "domainId")));
 
         mockMvc.perform(get("/api/v1/audit-logs")
                         .param("scope", "ACCOUNT")
                         .param("scopeId", accountId.toString())
                         .header("Authorization", authorization))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)))
+                .andExpect(jsonPath("$", hasSize(7)))
                 .andExpect(jsonPath("$[*].entityType", containsInAnyOrder(
-                        "ACCOUNT", "INCOMING_BCC", "OUTGOING_BCC", "OUTGOING_BCC")))
-                .andExpect(jsonPath("$[*].entityType", hasItems("ACCOUNT", "INCOMING_BCC", "OUTGOING_BCC")));
+                        "ACCOUNT", "ACCOUNT", "ACCOUNT", "INCOMING_BCC", "INCOMING_BCC",
+                        "OUTGOING_BCC", "OUTGOING_BCC")))
+                .andExpect(jsonPath("$[*].entityType", hasItems("ACCOUNT", "INCOMING_BCC", "OUTGOING_BCC")))
+                .andExpect(jsonPath("$[*].resourceIdentifier", hasItems(
+                        "alice-renamed@" + domainName, "incoming@example.net", "outgoing@example.net")));
     }
 }
