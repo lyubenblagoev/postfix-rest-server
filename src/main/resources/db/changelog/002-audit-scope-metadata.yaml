@@ -1,0 +1,100 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-add-audit-account-scope
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: audit_logs
+              columnName: account_id
+      changes:
+        - addColumn:
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: account_id
+                  type: bigint
+
+  - changeSet:
+      id: 017-add-audit-domain-scope
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: audit_logs
+              columnName: domain_id
+      changes:
+        - addColumn:
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: domain_id
+                  type: bigint
+
+  - changeSet:
+      id: 018-create-audit-scope-backfill-state
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: audit_log_scope_backfill
+      changes:
+        - createTable:
+            tableName: audit_log_scope_backfill
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_audit_log_scope_backfill
+                    nullable: false
+              - column:
+                  name: backfill_version
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: completed_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 019-index-audit-domain-scope
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              indexName: idx_audit_domain_scope
+      changes:
+        - createIndex:
+            indexName: idx_audit_domain_scope
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: domain_id
+              - column:
+                  name: occurred_at
+
+  - changeSet:
+      id: 020-index-audit-account-scope
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              indexName: idx_audit_account_scope
+      changes:
+        - createIndex:
+            indexName: idx_audit_account_scope
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: account_id
+              - column:
+                  name: occurred_at

@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +23,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
-@Profile("updatedb")
 public class AuditLogScopeBackfill implements ApplicationRunner {
 
     private static final Long STATE_ID = 1L;

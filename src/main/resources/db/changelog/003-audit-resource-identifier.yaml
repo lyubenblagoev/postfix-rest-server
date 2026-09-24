@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 021-add-audit-resource-identifier
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            columnExists:
+              tableName: audit_logs
+              columnName: resource_identifier
+      changes:
+        - addColumn:
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: resource_identifier
+                  type: varchar(1024)

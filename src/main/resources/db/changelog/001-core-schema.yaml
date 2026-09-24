@@ -1,0 +1,526 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-domains
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: domains
+      changes:
+        - createTable:
+            tableName: domains
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_domains
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 002-create-accounts
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: accounts
+      changes:
+        - createTable:
+            tableName: accounts
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_accounts
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: username
+                  type: varchar(255)
+              - column:
+                  name: password
+                  type: varchar(255)
+              - column:
+                  name: domain_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_accounts_domain
+                    references: domains(id)
+
+  - changeSet:
+      id: 003-create-aliases
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: aliases
+      changes:
+        - createTable:
+            tableName: aliases
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_aliases
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: alias
+                  type: varchar(255)
+              - column:
+                  name: email
+                  type: varchar(255)
+              - column:
+                  name: domain_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_aliases_domain
+                    references: domains(id)
+
+  - changeSet:
+      id: 004-create-recipient-bccs
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: recipient_bccs
+      changes:
+        - createTable:
+            tableName: recipient_bccs
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_recipient_bccs
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: receiver_email_address
+                  type: varchar(255)
+              - column:
+                  name: account_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_recipient_bccs_account
+                    references: accounts(id)
+
+  - changeSet:
+      id: 005-create-sender-bccs
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: sender_bccs
+      changes:
+        - createTable:
+            tableName: sender_bccs
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_sender_bccs
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: receiver_email_address
+                  type: varchar(255)
+              - column:
+                  name: account_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_sender_bccs_account
+                    references: accounts(id)
+
+  - changeSet:
+      id: 006-create-roles
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: roles
+      changes:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_roles
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: name
+                  type: varchar(255)
+
+  - changeSet:
+      id: 007-create-users
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: users
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_users
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 008-create-user-devices
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: user_devices
+      changes:
+        - createTable:
+            tableName: user_devices
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_user_devices
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: refresh_token
+                  type: varchar(255)
+              - column:
+                  name: refresh_token_expiration_date
+                  type: timestamp
+              - column:
+                  name: remote_address
+                  type: varchar(255)
+              - column:
+                  name: type
+                  type: varchar(255)
+              - column:
+                  name: os
+                  type: varchar(255)
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_user_devices_user
+                    references: users(id)
+
+  - changeSet:
+      id: 009-create-users-roles
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: users_roles
+      changes:
+        - createTable:
+            tableName: users_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_users_roles_user
+                    references: users(id)
+              - column:
+                  name: role_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_users_roles_role
+                    references: roles(id)
+
+  - changeSet:
+      id: 010-create-audit-logs
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: audit_logs
+      changes:
+        - createTable:
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_audit_logs
+                    nullable: false
+              - column:
+                  name: action
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entity_type
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: entity_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: occurred_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: actor_user_id
+                  type: bigint
+              - column:
+                  name: actor_username
+                  type: varchar(320)
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 011-create-audit-log-changes
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: audit_log_changes
+      changes:
+        - createTable:
+            tableName: audit_log_changes
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_audit_log_changes
+                    nullable: false
+              - column:
+                  name: audit_log_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_audit_log_changes_log
+                    references: audit_logs(id)
+              - column:
+                  name: field_name
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: old_value
+                  type: varchar(2048)
+              - column:
+                  name: new_value
+                  type: varchar(2048)
+
+  - changeSet:
+      id: 012-index-accounts-domain-enabled
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              indexName: idx_account_domain_enabled
+      changes:
+        - createIndex:
+            indexName: idx_account_domain_enabled
+            tableName: accounts
+            columns:
+              - column:
+                  name: domain_id
+              - column:
+                  name: enabled
+
+  - changeSet:
+      id: 013-index-alias-domain-name-enabled
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              indexName: idx_alias_domain_name_enabled
+      changes:
+        - createIndex:
+            indexName: idx_alias_domain_name_enabled
+            tableName: aliases
+            columns:
+              - column:
+                  name: domain_id
+              - column:
+                  name: alias
+              - column:
+                  name: enabled
+
+  - changeSet:
+      id: 014-index-audit-entity-history
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              indexName: idx_audit_entity_history
+      changes:
+        - createIndex:
+            indexName: idx_audit_entity_history
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: entity_type
+              - column:
+                  name: entity_id
+              - column:
+                  name: occurred_at
+
+  - changeSet:
+      id: 015-index-audit-recent
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            indexExists:
+              indexName: idx_audit_recent
+      changes:
+        - createIndex:
+            indexName: idx_audit_recent
+            tableName: audit_logs
+            columns:
+              - column:
+                  name: occurred_at

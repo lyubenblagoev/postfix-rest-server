@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - include:
+      file: 001-core-schema.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 002-audit-scope-metadata.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: 003-audit-resource-identifier.yaml
+      relativeToChangelogFile: true
