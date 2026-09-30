@@ -3,10 +3,13 @@ package com.lyubenblagoev.postfixrest.controller;
 import com.lyubenblagoev.postfixrest.controller.model.LogoutRequest;
 import com.lyubenblagoev.postfixrest.service.model.DeviceInformation;
 import com.lyubenblagoev.postfixrest.service.AuthService;
+import com.lyubenblagoev.postfixrest.service.InvitationService;
 import com.lyubenblagoev.postfixrest.service.UserService;
 import com.lyubenblagoev.postfixrest.service.model.AuthResponse;
 import com.lyubenblagoev.postfixrest.service.model.LoginRequest;
 import com.lyubenblagoev.postfixrest.service.model.RefreshTokenRequest;
+import com.lyubenblagoev.postfixrest.controller.model.AcceptInvitationRequest;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -32,15 +35,18 @@ public class AuthController {
     private final AuthService authService;
     private final UserService userService;
     private final DeviceInformationConverter deviceInformationConverter;
+    private final InvitationService invitationService;
 
     public AuthController(DaoAuthenticationProvider authenticationProvider,
                           AuthService authService,
                           UserService userService,
-                          DeviceInformationConverter deviceInformationConverter) {
+                          DeviceInformationConverter deviceInformationConverter,
+                          InvitationService invitationService) {
         this.authenticationProvider = authenticationProvider;
         this.authService = authService;
         this.userService = userService;
         this.deviceInformationConverter = deviceInformationConverter;
+        this.invitationService = invitationService;
     }
 
     @PostMapping("/signin")
@@ -75,5 +81,11 @@ public class AuthController {
         userService.updateDeviceTokens(refreshTokenRequest.getLogin(), device, refreshTokenRequest.getRefreshToken(),
                 newTokens.getRefreshToken(), newTokens.getRefreshTokenExpirationDate());
         return ResponseEntity.ok(newTokens);
+    }
+
+    @PostMapping("/invitations/accept")
+    public ResponseEntity<Void> acceptInvitation(@RequestBody @Valid AcceptInvitationRequest request) {
+        invitationService.accept(request.getToken(), request.getPassword());
+        return ResponseEntity.noContent().build();
     }
 }

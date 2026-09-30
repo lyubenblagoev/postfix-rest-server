@@ -43,4 +43,16 @@ public interface AliasRepository extends CrudRepository<Alias, Long> {
 			""")
 	List<DomainAliasAggregate> findAggregatesByDomainId(@Param("domainId") Long domainId);
 
+	@Query("""
+			select a.domain.id as domainId,
+			       a.alias as aliasName,
+			       count(a.id) as recipientCount,
+			       sum(case when a.enabled = true then 1 else 0 end) as enabledRecipients,
+			       sum(case when a.enabled = false then 1 else 0 end) as disabledRecipients
+			from Alias a
+			where a.domain.id in :domainIds
+			group by a.domain.id, a.alias
+			""")
+	List<DomainAliasAggregate> findAggregatesByDomainIds(@Param("domainIds") Collection<Long> domainIds);
+
 }

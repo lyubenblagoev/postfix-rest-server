@@ -5,6 +5,7 @@ import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
 import com.lyubenblagoev.postfixrest.entity.AuditLog;
 import com.lyubenblagoev.postfixrest.entity.AuditLogChange;
 import com.lyubenblagoev.postfixrest.entity.AuditScope;
+import com.lyubenblagoev.postfixrest.UnauthorizedException;
 import com.lyubenblagoev.postfixrest.repository.AuditLogRepository;
 import com.lyubenblagoev.postfixrest.security.UserPrincipal;
 import com.lyubenblagoev.postfixrest.service.model.AuditLogResource;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +90,34 @@ public class AuditLogServiceImpl implements AuditLogService {
     }
 
     @Override
+    public List<AuditLogResource> find(AuditEntityType entityType, Long entityId, int limit,
+                                       Collection<Long> accessibleDomainIds) {
+        if (accessibleDomainIds == null) {
+            return find(entityType, entityId, limit);
+        }
+        if (accessibleDomainIds.isEmpty()) {
+            return List.of();
+        }
+        PageRequest pageRequest = PageRequest.of(0, limit);
+        List<AuditLog> logs;
+        if (entityType != null && entityId != null) {
+            logs = auditLogRepository.findByEntityTypeAndEntityIdOrderByOccurredAtDescIdDesc(entityType, entityId,
+                    pageRequest);
+            rejectOutOfScopeLogs(logs, accessibleDomainIds);
+        } else if (entityType != null) {
+            logs = auditLogRepository.findByScopeDomainIdInAndEntityTypeOrderByOccurredAtDescIdDesc(
+                    accessibleDomainIds, entityType, pageRequest);
+        } else if (entityId != null) {
+            logs = auditLogRepository.findByEntityIdOrderByOccurredAtDescIdDesc(entityId, pageRequest);
+            rejectOutOfScopeLogs(logs, accessibleDomainIds);
+        } else {
+            logs = auditLogRepository.findByScopeDomainIdInOrderByOccurredAtDescIdDesc(
+                    accessibleDomainIds, pageRequest);
+        }
+        return logs.stream().map(AuditLogResource::fromAuditLog).collect(Collectors.toList());
+    }
+
+    @Override
     public List<AuditLogResource> find(AuditScope scope, Long scopeId, int limit) {
         PageRequest pageRequest = PageRequest.of(0, limit);
         List<AuditEntityType> entityTypes = scope == AuditScope.DOMAIN
@@ -130,6 +160,13 @@ public class AuditLogServiceImpl implements AuditLogService {
 
         if (action != AuditAction.UPDATED || !auditLog.getChanges().isEmpty()) {
             auditLogRepository.save(auditLog);
+        }
+    }
+
+    private void rejectOutOfScopeLogs(List<AuditLog> logs, Collection<Long> accessibleDomainIds) {
+        if (logs.stream().anyMatch(log -> log.getScopeDomainId() == null
+                || !accessibleDomainIds.contains(log.getScopeDomainId()))) {
+            throw new UnauthorizedException("Audit log access denied");
         }
     }
 

@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Collection;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,18 @@ public class DomainServiceImpl implements DomainService {
 		List<DomainResource> domains = new ArrayList<>();
 		entities.forEach(e -> domains.add(DomainResource.fromDomain(e)));
 		return domains;
+	}
+
+	@Override
+	public List<DomainResource> getAllDomains(Collection<Long> domainIds) {
+		if (domainIds == null) {
+			return getAllDomains();
+		}
+		if (domainIds.isEmpty()) {
+			return List.of();
+		}
+		return domainRepository.findAllByIdInOrderByNameAsc(domainIds).stream()
+				.map(DomainResource::fromDomain).toList();
 	}
 
 	@Override

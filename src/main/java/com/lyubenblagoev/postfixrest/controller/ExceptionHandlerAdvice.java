@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.NotFoundException;
+import com.lyubenblagoev.postfixrest.ForbiddenException;
+import com.lyubenblagoev.postfixrest.UnauthorizedException;
 import com.lyubenblagoev.postfixrest.service.EntityExistsException;
 
 @ControllerAdvice
@@ -37,6 +39,16 @@ public class ExceptionHandlerAdvice {
 	@ExceptionHandler(BadCredentialsException.class)
 	private ResponseEntity<ApiErrorResponse> badCredentialsExceptionHandler(HttpServletRequest request, Exception exception) {
 		return handleException(exception, request, HttpStatus.UNAUTHORIZED);
+	}
+
+	@ExceptionHandler(UnauthorizedException.class)
+	private ResponseEntity<ApiErrorResponse> unauthorizedExceptionHandler(HttpServletRequest request, Exception exception) {
+		return handleException(exception, request, HttpStatus.UNAUTHORIZED);
+	}
+
+	@ExceptionHandler(ForbiddenException.class)
+	private ResponseEntity<ApiErrorResponse> forbiddenExceptionHandler(HttpServletRequest request, Exception exception) {
+		return handleException(exception, request, HttpStatus.FORBIDDEN);
 	}
 
 	@ExceptionHandler(Exception.class)

@@ -2,6 +2,7 @@ package com.lyubenblagoev.postfixrest.controller;
 
 import com.lyubenblagoev.postfixrest.NotFoundException;
 import com.lyubenblagoev.postfixrest.service.DomainSummaryService;
+import com.lyubenblagoev.postfixrest.service.WorkspaceAccessService;
 import com.lyubenblagoev.postfixrest.service.model.DomainSummaryResource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,14 +16,17 @@ import java.util.List;
 public class DomainSummaryController {
 
     private final DomainSummaryService domainSummaryService;
+    private final WorkspaceAccessService workspaceAccessService;
 
-    public DomainSummaryController(DomainSummaryService domainSummaryService) {
+    public DomainSummaryController(DomainSummaryService domainSummaryService,
+                                   WorkspaceAccessService workspaceAccessService) {
         this.domainSummaryService = domainSummaryService;
+        this.workspaceAccessService = workspaceAccessService;
     }
 
     @GetMapping
     public List<DomainSummaryResource> listDomainSummaries() {
-        return domainSummaryService.getAllDomainSummaries();
+        return domainSummaryService.getAllDomainSummaries(workspaceAccessService.accessibleDomainIds());
     }
 
     @GetMapping("/{name:.+}")

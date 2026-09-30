@@ -4,6 +4,7 @@ import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.entity.AuditEntityType;
 import com.lyubenblagoev.postfixrest.entity.AuditScope;
 import com.lyubenblagoev.postfixrest.service.AuditLogService;
+import com.lyubenblagoev.postfixrest.service.WorkspaceAccessService;
 import com.lyubenblagoev.postfixrest.service.model.AuditLogResource;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -21,9 +22,11 @@ import java.util.List;
 public class AuditLogController {
 
     private final AuditLogService auditLogService;
+    private final WorkspaceAccessService workspaceAccessService;
 
-    public AuditLogController(AuditLogService auditLogService) {
+    public AuditLogController(AuditLogService auditLogService, WorkspaceAccessService workspaceAccessService) {
         this.auditLogService = auditLogService;
+        this.workspaceAccessService = workspaceAccessService;
     }
 
     @GetMapping
@@ -37,8 +40,16 @@ public class AuditLogController {
             throw new BadRequestException("scope and scopeId must be provided together");
         }
         if (scope != null) {
+            if (scope == AuditScope.DOMAIN) {
+                workspaceAccessService.assertDomainIdAccess(scopeId);
+            } else {
+                workspaceAccessService.assertAccountAccess(scopeId);
+            }
             return auditLogService.find(scope, scopeId, limit);
         }
-        return auditLogService.find(entityType, entityId, limit);
+        if (entityType == AuditEntityType.DOMAIN && entityId != null) {
+            workspaceAccessService.assertDomainIdAccess(entityId);
+        }
+        return auditLogService.find(entityType, entityId, limit, workspaceAccessService.accessibleDomainIds());
     }
 }

@@ -1,7 +1,7 @@
 package com.lyubenblagoev.postfixrest.entity;
 
 import jakarta.persistence.*;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +16,7 @@ public class User extends BaseEntity {
     private String password;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user")
-    private List<Device> devices = Collections.emptyList();
+    private List<Device> devices = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
@@ -24,7 +24,10 @@ public class User extends BaseEntity {
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id")
     )
-    private List<Role> roles;
+    private List<Role> roles = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WorkspaceMapping> workspaceMappings = new java.util.ArrayList<>();
 
     public User(String email, String password) {
         super();
@@ -78,5 +81,13 @@ public class User extends BaseEntity {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+
+    public List<WorkspaceMapping> getWorkspaceMappings() {
+        return workspaceMappings;
+    }
+
+    public void setWorkspaceMappings(List<WorkspaceMapping> workspaceMappings) {
+        this.workspaceMappings = workspaceMappings;
     }
 }

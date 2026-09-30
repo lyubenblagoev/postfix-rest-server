@@ -1,0 +1,258 @@
+databaseChangeLog:
+  - changeSet:
+      id: 022-create-workspaces
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: workspaces
+      changes:
+        - createTable:
+            tableName: workspaces
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_workspaces
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_workspace_name
+
+  - changeSet:
+      id: 023-create-workspace-domains
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: workspace_domains
+      changes:
+        - createTable:
+            tableName: workspace_domains
+            columns:
+              - column:
+                  name: workspace_id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_workspace_domains
+                    nullable: false
+                    foreignKeyName: fk_workspace_domains_workspace
+                    references: workspaces(id)
+                    onDelete: CASCADE
+              - column:
+                  name: domain_id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_workspace_domains
+                    nullable: false
+                    foreignKeyName: fk_workspace_domains_domain
+                    references: domains(id)
+                    onDelete: CASCADE
+
+  - changeSet:
+      id: 024-create-workspace-mappings
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: workspace_mappings
+      changes:
+        - createTable:
+            tableName: workspace_mappings
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_workspace_mappings
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_workspace_mappings_user
+                    references: users(id)
+              - column:
+                  name: workspace_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_workspace_mappings_workspace
+                    references: workspaces(id)
+              - column:
+                  name: role_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_workspace_mappings_role
+                    references: roles(id)
+        - addUniqueConstraint:
+            tableName: workspace_mappings
+            columnNames: user_id, workspace_id
+            constraintName: uq_workspace_mapping_user_workspace
+
+  - changeSet:
+      id: 025-create-workspace-invitations
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            tableExists:
+              tableName: workspace_invitations
+      changes:
+        - createTable:
+            tableName: workspace_invitations
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_workspace_invitations
+                    nullable: false
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: email
+                  type: varchar(320)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: token_hash
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uq_workspace_invitation_token_hash
+              - column:
+                  name: role_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_workspace_invitations_role
+                    references: roles(id)
+              - column:
+                  name: workspace_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_workspace_invitations_workspace
+                    references: workspaces(id)
+              - column:
+                  name: expires_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: accepted_at
+                  type: timestamp
+
+  - changeSet:
+      id: 026-seed-workspace-member-role
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: "0"
+            sql: SELECT COUNT(*) FROM roles WHERE name = 'WORKSPACE_MEMBER'
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: enabled
+                  valueBoolean: true
+              - column:
+                  name: name
+                  value: WORKSPACE_MEMBER
+
+  - changeSet:
+      id: 027-create-default-workspace
+      author: postfix-rest-server
+      preConditions:
+        - onFail: MARK_RAN
+        - sqlCheck:
+            expectedResult: "0"
+            sql: SELECT COUNT(*) FROM workspaces WHERE name = 'Default'
+      changes:
+        - insert:
+            tableName: workspaces
+            columns:
+              - column:
+                  name: enabled
+                  valueBoolean: true
+              - column:
+                  name: created
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: name
+                  value: Default
+
+  - changeSet:
+      id: 028-map-existing-domains-to-default-workspace
+      author: postfix-rest-server
+      changes:
+        - sql:
+            sql: >-
+              INSERT INTO workspace_domains (workspace_id, domain_id)
+              SELECT w.id, d.id FROM workspaces w CROSS JOIN domains d
+              WHERE w.name = 'Default'
+
+  - changeSet:
+      id: 029-map-existing-users-to-default-workspace
+      author: postfix-rest-server
+      changes:
+        - sql:
+            sql: >-
+              INSERT INTO workspace_mappings (enabled, user_id, workspace_id, role_id)
+              SELECT TRUE, u.id, w.id, r.id
+              FROM users u CROSS JOIN workspaces w CROSS JOIN roles r
+              WHERE w.name = 'Default' AND r.name = 'WORKSPACE_MEMBER'
+                AND NOT EXISTS (SELECT 1 FROM users_roles ur JOIN roles admin_role ON admin_role.id = ur.role_id
+                                WHERE ur.user_id = u.id AND admin_role.name = 'ADMIN')

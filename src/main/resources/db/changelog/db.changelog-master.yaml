@@ -8,3 +8,6 @@ databaseChangeLog:
   - include:
       file: 003-audit-resource-identifier.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 004-workspaces.yaml
+      relativeToChangelogFile: true

@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.security;
 
 import com.lyubenblagoev.postfixrest.entity.User;
+import com.lyubenblagoev.postfixrest.entity.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,7 +24,8 @@ public class UserPrincipal implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
 
-        grantedAuthorities.addAll(user.getRoles().stream()
+        List<Role> roles = user.getRoles() == null ? List.of() : user.getRoles();
+        grantedAuthorities.addAll(roles.stream()
                 .map(role -> {
                     GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_" + role.getName());
                     return grantedAuthority;

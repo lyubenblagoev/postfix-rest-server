@@ -2,21 +2,23 @@ package com.lyubenblagoev.postfixrest.controller;
 
 import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.NotFoundException;
-import com.lyubenblagoev.postfixrest.security.UserPrincipal;
 import com.lyubenblagoev.postfixrest.service.DomainService;
+import com.lyubenblagoev.postfixrest.service.WorkspaceAccessService;
 import com.lyubenblagoev.postfixrest.service.model.DomainResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.security.Principal;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -25,18 +27,21 @@ import java.util.Optional;
 public class DomainController {
 	
 	private final DomainService domainService;
+	private final WorkspaceAccessService workspaceAccessService;
 	
-	public DomainController(DomainService domainService) {
+	public DomainController(DomainService domainService, WorkspaceAccessService workspaceAccessService) {
 		this.domainService = domainService;
+		this.workspaceAccessService = workspaceAccessService;
 	}
 	
 	@GetMapping
 	public List<DomainResource> listDomains() {
-		return domainService.getAllDomains();
+		return domainService.getAllDomains(workspaceAccessService.accessibleDomainIds());
 	}
 	
 	@PostMapping
 	public ResponseEntity<DomainResource> addDomain(@Valid @RequestBody DomainResource domain, BindingResult result) {
+		workspaceAccessService.requireAdmin();
 		if (result.hasErrors()) {
 			throw new BadRequestException(ControllerUtils.getError(result));
 		}
@@ -54,6 +59,7 @@ public class DomainController {
 	
 	@DeleteMapping(value = "/{name:.+}")
 	public ResponseEntity<?> delete(@PathVariable("name") String name, HttpServletRequest request) {
+		workspaceAccessService.requireAdmin();
 		Optional<DomainResource> domain = domainService.getDomainByName(name);
 		return domain.map(d -> {
 			domainService.delete(d);
@@ -64,6 +70,7 @@ public class DomainController {
 	@PutMapping(value = "/{name:.+}")
 	public ResponseEntity<DomainResource> edit(@PathVariable("name") String name,
 			@Valid @RequestBody DomainResource domain, BindingResult result) {
+		workspaceAccessService.requireAdmin();
 		if (result.hasErrors()) {
 			throw new BadRequestException(ControllerUtils.getError(result));
 		}

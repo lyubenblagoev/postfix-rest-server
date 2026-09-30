@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +42,22 @@ public class DomainSummaryServiceImpl implements DomainSummaryService {
         return domains.stream()
                 .map(domain -> toResource(domain, accounts, aliases))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<DomainSummaryResource> getAllDomainSummaries(Collection<Long> domainIds) {
+        if (domainIds == null) {
+            return getAllDomainSummaries();
+        }
+        if (domainIds.isEmpty()) {
+            return List.of();
+        }
+        List<Domain> domains = domainRepository.findAllByIdInOrderByNameAsc(domainIds);
+        Map<Long, DomainSummaryResource.AccountSummary> accounts = accountSummaries(
+                accountRepository.findAggregatesByDomainIds(domainIds));
+        Map<Long, DomainSummaryResource.AliasSummary> aliases = aliasSummaries(
+                aliasRepository.findAggregatesByDomainIds(domainIds));
+        return domains.stream().map(domain -> toResource(domain, accounts, aliases)).collect(Collectors.toList());
     }
 
     @Override

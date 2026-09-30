@@ -11,6 +11,8 @@ import java.util.List;
 public class Role extends BaseEntity {
 
     public static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_WORKSPACE_ADMIN = "WORKSPACE_ADMIN";
+    public static final String ROLE_WORKSPACE_MEMBER = "WORKSPACE_MEMBER";
 
     @Column
     private String name;

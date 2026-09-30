@@ -97,6 +97,20 @@ New audit entries contain a persisted `resourceIdentifier`, so scoped retrieval 
 
 Audit-log scope and resource-identifier backfills run automatically after Liquibase has applied the schema migrations. A versioned completion marker makes the backfill idempotent. Historical values are populated only when the audit snapshots contain enough information; otherwise the values remain null rather than being guessed from current resources.
 
+### Workspace access and invitations
+
+Domains can be allocated to multiple workspaces, and a user can be mapped to multiple workspaces. A user's domain access is the union of the domains allocated to their mapped workspaces. Domain, account, alias, domain-summary, and audit-log queries use this access automatically; clients do not select a workspace or pass a workspace filter when reading those resources. Requests for a domain outside the user's access return HTTP 401. Administrators have access to all domains.
+
+Only administrators can create or delete workspaces, change a workspace's domain allocation, or create, rename, and delete domain records. A workspace administrator can view a workspace they belong to and manage its user mappings. Domain allocation is controlled by administrators because workspace mappings are what grant users access to the domains allocated to a workspace.
+
+The `WORKSPACE_ADMIN` and `WORKSPACE_MEMBER` roles are stored on individual workspace mappings, rather than as global user roles. This keeps future workspace-scoped roles separate from administrator privileges. An omitted role when creating a mapping defaults to `WORKSPACE_MEMBER`.
+
+Existing non-admin users and all current domains are mapped to a `Default` workspace during migration, preserving existing users' domain access. Administrators can then create new workspaces and change mappings and allocations. New domains are not automatically added to any workspace.
+
+Global administrators can create time-limited invitations for `ADMIN`, `WORKSPACE_ADMIN`, or `WORKSPACE_MEMBER` roles. Workspace administrators can invite `WORKSPACE_MEMBER` users to workspaces they administer. The response contains a one-time token and its expiration time; the inviter places that token in the front-end invitation URL to send through their chosen channel. The default validity is 72 hours and can be changed with `users.invitation.validity-hours`. The token is stored as a SHA-256 hash. Invitees accept it by setting a password, then sign in normally. An `ADMIN` invitation must not include a workspace; a `WORKSPACE_ADMIN` or `WORKSPACE_MEMBER` invitation must include one.
+
+Workspace and invitation endpoints are listed in the API Reference below. The standard API error shape is `{ "message": "...", "path": "...", "method": "..." }`.
+
 The server will check for a valid authentication token in the Authorization header, and if it is present, the user will be allowed to access the protected resource.
 
 For security purposes the JWTs are valid for 15 minutes. If an invalid token is sent to the server, it will respond with HTTP status code 401. Clients can respond to this event by silently obtaining a new access token (JWT) using the user's login (email address), and the refresh token received from the server after successful login. If the provided refresh token is valid the server responds by returning a new authentication and refresh tokens. By default, refresh tokens are valid for 30 days after they are issued. 
@@ -173,6 +187,191 @@ Here's a short overview of the possible REST API calls:
 |--------------|--------|------------------------------------------------|
 | login        | string | **Required** Your user's login / email address |
 | refreshToken | string | **Required** Your refresh token                |
+
+### Workspaces and invitations
+
+Workspace endpoints require an authenticated request, except for accepting an invitation. Workspace creation, deletion, and domain allocation changes require the global `ADMIN` role. Workspace administrators can read and manage mappings for workspaces they administer. They can also invite `WORKSPACE_MEMBER` users to those workspaces. Only global administrators can invite `ADMIN` or `WORKSPACE_ADMIN` users.
+
+**List workspaces (administrator only)**
+
+    GET /api/v1/workspaces
+
+Returns an array of workspace resources:
+
+```json
+[
+  { "id": 12, "name": "Operations", "domainNames": ["example.com", "example.org"] }
+]
+```
+
+**List workspaces managed by the current user**
+
+    GET /api/v1/workspaces/managed
+
+Returns the workspaces where the authenticated user has an enabled `WORKSPACE_ADMIN` mapping, using the same resource shape. Users with no such mappings receive an empty array. Global administrators receive all workspaces.
+
+**List workspaces accessible to the current user**
+
+    GET /api/v1/workspaces/accessible
+
+Returns workspaces where the authenticated user has an enabled mapping of any workspace role.
+Global administrators receive all workspaces.
+
+**Create a workspace (administrator only)**
+
+    POST /api/v1/workspaces
+
+| Parameter   | Type             | Description                                        |
+|-------------|------------------|----------------------------------------------------|
+| name        | string           | **Required** Workspace name (request body)        |
+| domainNames | array of strings | Existing domain names (request body)               |
+
+`domainNames` may be omitted or empty. Returns HTTP 201 and the created workspace resource.
+
+**Read a workspace**
+
+    GET /api/v1/workspaces/${workspaceId}
+
+| Parameter   | Type    | Description                                      |
+|-------------|---------|--------------------------------------------------|
+| workspaceId | integer | **Required** The ID of the workspace (path)      |
+
+Administrators can read any workspace; other users need a mapping to that workspace. Returns the same workspace resource shape.
+
+**Rename a workspace or replace its allocation (administrator only)**
+
+    PUT /api/v1/workspaces/${workspaceId}
+
+| Parameter   | Type             | Description                                                   |
+|-------------|------------------|---------------------------------------------------------------|
+| workspaceId | integer          | **Required** The ID of the workspace (path)                   |
+| name        | string           | **Required** The new workspace name (request body)            |
+| domainNames | array of strings | Domain names to allocate (request body)                        |
+
+`name` is required. If `domainNames` is omitted, the current allocation is kept; if supplied, it replaces the allocation. Returns the updated workspace resource.
+
+**Replace a workspace's domain allocation (administrator only)**
+
+    PUT /api/v1/workspaces/${workspaceId}/domains
+
+| Parameter   | Type             | Description                                                      |
+|-------------|------------------|------------------------------------------------------------------|
+| workspaceId | integer          | **Required** The ID of the workspace (path)                      |
+| domainNames | array of strings | Request body. Optional; omission or an empty list removes all allocations |
+
+Returns the updated workspace resource.
+
+**Append an existing domain (administrator only)**
+
+    POST /api/v1/workspaces/${workspaceId}/domains
+
+| Parameter   | Type    | Description                                        |
+|-------------|---------|----------------------------------------------------|
+| workspaceId | integer | **Required** The ID of the workspace (path)        |
+| domainName  | string  | **Required** Existing domain name (request body)   |
+
+Returns the updated workspace resource. A domain can be allocated to more than one workspace.
+
+**Remove a domain allocation (administrator only)**
+
+    DELETE /api/v1/workspaces/${workspaceId}/domains/${domainName}
+
+| Parameter   | Type    | Description                                      |
+|-------------|---------|--------------------------------------------------|
+| workspaceId | integer | **Required** The ID of the workspace (path)      |
+| domainName  | string  | **Required** The domain name (path)              |
+
+Removing a domain allocation returns the updated workspace resource.
+
+**Delete a workspace (administrator only)**
+
+    DELETE /api/v1/workspaces/${workspaceId}
+
+| Parameter   | Type    | Description                                      |
+|-------------|---------|--------------------------------------------------|
+| workspaceId | integer | **Required** The ID of the workspace (path)      |
+
+Returns HTTP 204.
+
+**List workspace mappings (workspace administrator or administrator)**
+
+    GET /api/v1/workspaces/${workspaceId}/mappings
+
+| Parameter   | Type    | Description                                      |
+|-------------|---------|--------------------------------------------------|
+| workspaceId | integer | **Required** The ID of the workspace (path)      |
+
+Returns an array of mappings:
+
+```json
+[
+  { "id": 45, "email": "user@example.com", "role": "WORKSPACE_ADMIN" }
+]
+```
+
+**Add or change a user's workspace mapping (workspace administrator or administrator)**
+
+    POST /api/v1/workspaces/${workspaceId}/mappings
+
+| Parameter   | Type    | Description                                                            |
+|-------------|---------|------------------------------------------------------------------------|
+| workspaceId | integer | **Required** The ID of the workspace (path)                            |
+| email       | string  | **Required** Email address of an existing user (request body)          |
+| role        | string  | Optional request body field. Defaults to `WORKSPACE_MEMBER`            |
+
+Allowed roles are `WORKSPACE_MEMBER` and `WORKSPACE_ADMIN`. `ADMIN` is a global role and cannot be set on a workspace mapping. Returns the saved mapping resource.
+
+A workspace administrator cannot downgrade their own mapping. Another workspace administrator or a global administrator must make that change; self-demotion returns HTTP 403.
+
+**Remove a user's workspace mapping (workspace administrator or administrator)**
+
+    DELETE /api/v1/workspaces/${workspaceId}/mappings/${email}
+
+| Parameter   | Type    | Description                                      |
+|-------------|---------|--------------------------------------------------|
+| workspaceId | integer | **Required** The ID of the workspace (path)      |
+| email       | string  | **Required** Email address of the user (path)    |
+
+Returns HTTP 204. URL-encode the email path segment.
+
+A workspace administrator cannot remove their own mapping; another workspace administrator or a global administrator must do so.
+
+**Create an invitation (administrator, or workspace administrator inviting a member to their workspace)**
+
+    POST /api/v1/invitations
+
+| Parameter   | Type    | Description                                                                                         |
+|-------------|---------|-----------------------------------------------------------------------------------------------------|
+| email       | string  | **Required** Invitee's email address (request body)                                                 |
+| role        | string  | **Required** `ADMIN`, `WORKSPACE_ADMIN`, or `WORKSPACE_MEMBER` (request body)                       |
+| workspaceId | integer | Required for `WORKSPACE_ADMIN` and `WORKSPACE_MEMBER`; omit for `ADMIN` (request body)              |
+
+Only a global administrator can invite an `ADMIN` or `WORKSPACE_ADMIN`. A global administrator can invite a `WORKSPACE_MEMBER` to any workspace; a workspace administrator can invite one only to a workspace they administer. Accepting the invitation creates the user account if needed and creates or updates their mapping to the selected workspace.
+
+A workspace administrator cannot invite their own email as a member; another workspace administrator or a global administrator must perform that change.
+
+Returns HTTP 201 with the token and its metadata:
+
+```json
+{
+  "email": "member@example.com",
+  "role": "WORKSPACE_MEMBER",
+  "workspaceId": 12,
+  "token": "one-time-token",
+  "expiresAt": "<JSON date-time>"
+}
+```
+
+The inviter or front end includes `token` in the URL sent to the invitee. The invitee submits the token and chosen password to the public acceptance endpoint:
+
+    POST /api/v1/auth/invitations/accept
+
+| Parameter | Type   | Description                                  |
+|-----------|--------|----------------------------------------------|
+| token     | string | **Required** Invitation token (request body) |
+| password  | string | **Required** Password to set (request body)  |
+
+Successful acceptance returns HTTP 204. The invitee then signs in using `/api/v1/auth/signin`. Invalid, expired, or already accepted invitations return HTTP 400.
 
 ### Users
 

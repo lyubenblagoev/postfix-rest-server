@@ -42,13 +42,20 @@ public class DefaultAdminUserInitializer {
     }
 
     private void createDefaultRolesIfNotExists() {
-        if (roleRepository.findAll().isEmpty()) {
-            Role adminRole = new Role();
-            adminRole.setName(Role.ROLE_ADMIN);
-            adminRole.setEnabled(true);
-            roleRepository.save(adminRole);
-            logger.info("Created default admin role \"{}\"", Role.ROLE_ADMIN);
+        createRoleIfNotExists(Role.ROLE_ADMIN);
+        createRoleIfNotExists(Role.ROLE_WORKSPACE_ADMIN);
+        createRoleIfNotExists(Role.ROLE_WORKSPACE_MEMBER);
+    }
+
+    private void createRoleIfNotExists(String roleName) {
+        if (!roleRepository.findByName(roleName).isEmpty()) {
+            return;
         }
+        Role role = new Role();
+        role.setName(roleName);
+        role.setEnabled(true);
+        roleRepository.save(role);
+        logger.info("Created default role \"{}\"", roleName);
     }
 
     private void createDefaultUserIfNotExists() {

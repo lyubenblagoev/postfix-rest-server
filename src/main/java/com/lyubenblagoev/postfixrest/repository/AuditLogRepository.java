@@ -19,9 +19,15 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 
     List<AuditLog> findAllByOrderByOccurredAtDescIdDesc(Pageable pageable);
 
+    List<AuditLog> findByScopeDomainIdInOrderByOccurredAtDescIdDesc(Collection<Long> scopeDomainIds,
+                                                                    Pageable pageable);
+
+    List<AuditLog> findByScopeDomainIdInAndEntityTypeOrderByOccurredAtDescIdDesc(
+            Collection<Long> scopeDomainIds, AuditEntityType entityType, Pageable pageable);
+
     List<AuditLog> findByScopeDomainIdAndEntityTypeInOrderByOccurredAtDescIdDesc(Long scopeDomainId,
-                                                                                   Collection<AuditEntityType> entityTypes,
-                                                                                   Pageable pageable);
+                                                                                 Collection<AuditEntityType> entityTypes,
+                                                                                 Pageable pageable);
 
     List<AuditLog> findByScopeAccountIdAndEntityTypeInOrderByOccurredAtDescIdDesc(Long scopeAccountId,
                                                                                    Collection<AuditEntityType> entityTypes,
