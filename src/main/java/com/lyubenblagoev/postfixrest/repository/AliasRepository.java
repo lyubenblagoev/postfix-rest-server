@@ -6,17 +6,23 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.lyubenblagoev.postfixrest.entity.Alias;
 
-public interface AliasRepository extends CrudRepository<Alias, Long> {
+public interface AliasRepository extends JpaRepository<Alias, Long> {
 
 	Collection<Alias> findByDomainId(Long domainId);
 
 	Collection<Alias> findByDomainName(String domainName);
+
+	Page<Alias> findByDomainNameOrderByAliasAscEmailAscIdAsc(String domainName, Pageable pageable);
 	
 	Collection<Alias> findByDomainNameAndAlias(String domainName, String alias);
+
+	Page<Alias> findByDomainNameAndAliasOrderByEmailAscIdAsc(String domainName, String alias, Pageable pageable);
 	
 	Optional<Alias> findByDomainNameAndAliasAndEmail(String domainName, String alias, String email);
 

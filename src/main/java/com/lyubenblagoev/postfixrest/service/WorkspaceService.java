@@ -17,6 +17,9 @@ import com.lyubenblagoev.postfixrest.service.model.WorkspaceChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.WorkspaceMappingRequest;
 import com.lyubenblagoev.postfixrest.service.model.WorkspaceMappingResource;
 import com.lyubenblagoev.postfixrest.service.model.WorkspaceResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -58,14 +63,27 @@ public class WorkspaceService {
                 .map(WorkspaceResource::fromWorkspace).toList();
     }
 
+    public Page<WorkspaceResource> findAll(Pageable pageable) {
+        return toWorkspaceResourcePage(workspaceRepository.findAll(pageable));
+    }
+
     public List<WorkspaceResource> findManagedByUser(Long userId) {
         return mappingRepository.findEnabledWorkspacesByUserIdAndRoleName(userId, Role.ROLE_WORKSPACE_ADMIN)
                 .stream().map(WorkspaceResource::fromWorkspace).toList();
     }
 
+    public Page<WorkspaceResource> findManagedByUser(Long userId, Pageable pageable) {
+        return toWorkspaceResourcePage(mappingRepository.findPageOfEnabledWorkspacesByUserIdAndRoleName(
+                userId, Role.ROLE_WORKSPACE_ADMIN, pageable));
+    }
+
     public List<WorkspaceResource> findAccessibleByUser(Long userId) {
         return mappingRepository.findEnabledWorkspacesByUserId(userId).stream()
                 .map(WorkspaceResource::fromWorkspace).toList();
+    }
+
+    public Page<WorkspaceResource> findAccessibleByUser(Long userId, Pageable pageable) {
+        return toWorkspaceResourcePage(mappingRepository.findPageOfEnabledWorkspacesByUserId(userId, pageable));
     }
 
     public WorkspaceResource findById(Long id) {
@@ -151,6 +169,12 @@ public class WorkspaceService {
                 .map(WorkspaceMappingResource::fromMapping).toList();
     }
 
+    public Page<WorkspaceMappingResource> getMappings(Long workspaceId, Pageable pageable) {
+        getWorkspace(workspaceId);
+        return mappingRepository.findPageByWorkspaceIdWithUser(workspaceId, pageable)
+                .map(WorkspaceMappingResource::fromMapping);
+    }
+
     @Transactional
     public WorkspaceMappingResource saveMapping(Long workspaceId, WorkspaceMappingRequest request) {
         Workspace workspace = getWorkspace(workspaceId);
@@ -194,6 +218,20 @@ public class WorkspaceService {
     Workspace getWorkspace(Long id) {
         return workspaceRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Workspace not found"));
+    }
+
+    private Page<WorkspaceResource> toWorkspaceResourcePage(Page<Workspace> page) {
+        List<Long> workspaceIds = page.getContent().stream().map(Workspace::getId).toList();
+        if (workspaceIds.isEmpty()) {
+            return page.map(WorkspaceResource::fromWorkspace);
+        }
+        Map<Long, Workspace> workspacesById = workspaceRepository.findAllWithDomainsByIdIn(workspaceIds).stream()
+                .collect(Collectors.toMap(Workspace::getId, Function.identity()));
+        List<WorkspaceResource> resources = workspaceIds.stream()
+                .map(workspacesById::get)
+                .map(WorkspaceResource::fromWorkspace)
+                .toList();
+        return new PageImpl<>(resources, page.getPageable(), page.getTotalElements());
     }
 
     private List<Domain> findDomains(List<String> names) {

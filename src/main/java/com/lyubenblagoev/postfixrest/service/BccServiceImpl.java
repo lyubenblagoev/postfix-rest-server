@@ -28,7 +28,7 @@ public class BccServiceImpl extends AbstractBccServiceImpl {
 	private final AuditLogService auditLogService;
 
 	public BccServiceImpl(OutgoingBccRepository outBccRepository, IncomingBccRepository inBccRepository,
-			AccountRepository accountRepository, AuditLogService auditLogService) {
+	                      AccountRepository accountRepository, AuditLogService auditLogService) {
 		super(accountRepository);
 		this.outBccRepository = outBccRepository;
 		this.inBccRepository = inBccRepository;

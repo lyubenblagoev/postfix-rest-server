@@ -46,11 +46,11 @@ public class InvitationService {
     private long validityHours;
 
     public InvitationService(WorkspaceInvitationRepository invitationRepository,
-                            WorkspaceRepository workspaceRepository,
-                            WorkspaceMappingRepository mappingRepository,
-                            UserRepository userRepository,
-                            RoleRepository roleRepository,
-                            PasswordEncoder passwordEncoder) {
+                             WorkspaceRepository workspaceRepository,
+                             WorkspaceMappingRepository mappingRepository,
+                             UserRepository userRepository,
+                             RoleRepository roleRepository,
+                             PasswordEncoder passwordEncoder) {
         this.invitationRepository = invitationRepository;
         this.workspaceRepository = workspaceRepository;
         this.mappingRepository = mappingRepository;

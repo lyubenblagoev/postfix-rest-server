@@ -43,8 +43,8 @@ class AuditLogControllerIntegrationTest {
 
     @Autowired
     AuditLogControllerIntegrationTest(MockMvc mockMvc, JwtTokenProvider jwtTokenProvider,
-                                     DomainRepository domainRepository, AccountRepository accountRepository,
-                                     OutgoingBccRepository outgoingBccRepository) {
+                                      DomainRepository domainRepository, AccountRepository accountRepository,
+                                      OutgoingBccRepository outgoingBccRepository) {
         this.mockMvc = mockMvc;
         this.jwtTokenProvider = jwtTokenProvider;
         this.domainRepository = domainRepository;

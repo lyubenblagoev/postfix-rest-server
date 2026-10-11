@@ -2,6 +2,8 @@ package com.lyubenblagoev.postfixrest.service;
 
 import java.util.Collection;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.lyubenblagoev.postfixrest.service.model.AliasChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.AliasResource;
@@ -12,7 +14,11 @@ public interface AliasService {
 
 	Collection<AliasResource> getAliasesByDomainName(String domainName);
 
+	Page<AliasResource> getAliasesByDomainName(String domainName, Pageable pageable);
+
 	Collection<AliasResource> getAliasByDomainNameAndName(String domainName, String name);
+
+	Page<AliasResource> getAliasByDomainNameAndName(String domainName, String name, Pageable pageable);
 
 	Optional<AliasResource> getAliasByDomainNameAndNameAndEmail(String domainName, String name, String email);
 

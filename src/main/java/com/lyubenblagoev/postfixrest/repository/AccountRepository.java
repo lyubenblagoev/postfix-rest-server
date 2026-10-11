@@ -6,16 +6,20 @@ import java.util.Collection;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.lyubenblagoev.postfixrest.entity.Account;
 
-public interface AccountRepository extends CrudRepository<Account, Long> {
+public interface AccountRepository extends JpaRepository<Account, Long> {
 
 	@Query("select a.domain.id from Account a where a.id = :accountId")
 	Optional<Long> findDomainIdById(@Param("accountId") Long accountId);
 
 	List<Account> findByDomainName(String name);
+
+	Page<Account> findByDomainNameOrderByUsernameAscIdAsc(String name, Pageable pageable);
 
 	Optional<Account> findByUsernameAndDomainName(String username, String domainName);
 

@@ -1,6 +1,7 @@
 package com.lyubenblagoev.postfixrest.controller;
 
 import com.lyubenblagoev.postfixrest.ForbiddenException;
+import com.lyubenblagoev.postfixrest.configuration.PaginationProperties;
 import com.lyubenblagoev.postfixrest.entity.Role;
 import com.lyubenblagoev.postfixrest.service.WorkspaceAccessService;
 import com.lyubenblagoev.postfixrest.service.WorkspaceService;
@@ -10,9 +11,12 @@ import com.lyubenblagoev.postfixrest.service.model.WorkspaceDomainsRequest;
 import com.lyubenblagoev.postfixrest.service.model.WorkspaceMappingRequest;
 import com.lyubenblagoev.postfixrest.service.model.WorkspaceMappingResource;
 import com.lyubenblagoev.postfixrest.service.model.WorkspaceResource;
+import com.lyubenblagoev.postfixrest.service.model.PagedResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,9 +24,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/workspaces")
@@ -30,32 +34,43 @@ public class WorkspaceController {
 
     private final WorkspaceService workspaceService;
     private final WorkspaceAccessService accessService;
+    private final PaginationProperties paginationProperties;
 
-    public WorkspaceController(WorkspaceService workspaceService, WorkspaceAccessService accessService) {
+    public WorkspaceController(WorkspaceService workspaceService, WorkspaceAccessService accessService,
+                               PaginationProperties paginationProperties) {
         this.workspaceService = workspaceService;
         this.accessService = accessService;
+        this.paginationProperties = paginationProperties;
     }
 
     @GetMapping
-    public List<WorkspaceResource> list() {
+    public PagedResponse<WorkspaceResource> list(@RequestParam(required = false) Integer page,
+                                                 @RequestParam(required = false) Integer pageSize) {
         accessService.requireAdmin();
-        return workspaceService.findAll();
+        Pageable pageable = paginationProperties.toPageable(page, pageSize, Sort.by("name", "id"));
+        return PagedResponse.from(workspaceService.findAll(pageable));
     }
 
     @GetMapping("/managed")
-    public List<WorkspaceResource> managed() {
+    public PagedResponse<WorkspaceResource> managed(@RequestParam(required = false) Integer page,
+                                                    @RequestParam(required = false) Integer pageSize) {
         if (accessService.isAdmin()) {
-            return workspaceService.findAll();
+            Pageable pageable = paginationProperties.toPageable(page, pageSize, Sort.by("name", "id"));
+            return PagedResponse.from(workspaceService.findAll(pageable));
         }
-        return workspaceService.findManagedByUser(accessService.currentUserId());
+        Pageable pageable = paginationProperties.toPageable(page, pageSize, Sort.unsorted());
+        return PagedResponse.from(workspaceService.findManagedByUser(accessService.currentUserId(), pageable));
     }
 
     @GetMapping("/accessible")
-    public List<WorkspaceResource> accessible() {
+    public PagedResponse<WorkspaceResource> accessible(@RequestParam(required = false) Integer page,
+                                                       @RequestParam(required = false) Integer pageSize) {
         if (accessService.isAdmin()) {
-            return workspaceService.findAll();
+            Pageable pageable = paginationProperties.toPageable(page, pageSize, Sort.by("name", "id"));
+            return PagedResponse.from(workspaceService.findAll(pageable));
         }
-        return workspaceService.findAccessibleByUser(accessService.currentUserId());
+        Pageable pageable = paginationProperties.toPageable(page, pageSize, Sort.unsorted());
+        return PagedResponse.from(workspaceService.findAccessibleByUser(accessService.currentUserId(), pageable));
     }
 
     @PostMapping
@@ -105,9 +120,12 @@ public class WorkspaceController {
     }
 
     @GetMapping("/{workspaceId}/mappings")
-    public List<WorkspaceMappingResource> mappings(@PathVariable Long workspaceId) {
+    public PagedResponse<WorkspaceMappingResource> mappings(@PathVariable Long workspaceId,
+                                                            @RequestParam(required = false) Integer page,
+                                                            @RequestParam(required = false) Integer pageSize) {
         accessService.requireWorkspaceAdmin(workspaceId);
-        return workspaceService.getMappings(workspaceId);
+        Pageable pageable = paginationProperties.toPageable(page, pageSize, Sort.unsorted());
+        return PagedResponse.from(workspaceService.getMappings(workspaceId, pageable));
     }
 
     @PostMapping("/{workspaceId}/mappings")

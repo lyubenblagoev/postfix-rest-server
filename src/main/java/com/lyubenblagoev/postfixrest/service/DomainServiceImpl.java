@@ -12,6 +12,8 @@ import java.util.Collection;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.lyubenblagoev.postfixrest.FileUtils;
 import com.lyubenblagoev.postfixrest.configuration.MailServerConfiguration;
@@ -35,8 +37,8 @@ public class DomainServiceImpl implements DomainService {
 	private final AuditLogService auditLogService;
 	
 	public DomainServiceImpl(DomainRepository domainRepository, AccountRepository accountRepository,
-			AliasRepository aliasRepository, MailServerConfiguration mailServerConfiguration,
-			AuditLogService auditLogService) {
+	                         AliasRepository aliasRepository, MailServerConfiguration mailServerConfiguration,
+	                         AuditLogService auditLogService) {
 		this.domainRepository = domainRepository;
 		this.accountRepository = accountRepository;
 		this.aliasRepository = aliasRepository;
@@ -62,6 +64,17 @@ public class DomainServiceImpl implements DomainService {
 		}
 		return domainRepository.findAllByIdInOrderByNameAsc(domainIds).stream()
 				.map(DomainResource::fromDomain).toList();
+	}
+
+	@Override
+	public Page<DomainResource> getAllDomains(Collection<Long> domainIds, Pageable pageable) {
+		if (domainIds == null) {
+			return domainRepository.findAll(pageable).map(DomainResource::fromDomain);
+		}
+		if (domainIds.isEmpty()) {
+			return Page.empty(pageable);
+		}
+		return domainRepository.findByIdIn(domainIds, pageable).map(DomainResource::fromDomain);
 	}
 
 	@Override

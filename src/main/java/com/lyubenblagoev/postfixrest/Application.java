@@ -5,9 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 import com.lyubenblagoev.postfixrest.configuration.MailServerConfiguration;
+import com.lyubenblagoev.postfixrest.configuration.PaginationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties(MailServerConfiguration.class)
+@EnableConfigurationProperties({MailServerConfiguration.class, PaginationProperties.class})
 public class Application {
 
 	public static void main(String[] args) {

@@ -56,7 +56,7 @@ public class BccController {
 
 	@PostMapping(value = "/incoming")
 	public ResponseEntity<BccResource> addIncomingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account,
-			@Valid @RequestBody BccResource bcc, BindingResult result) {
+	                                                  @Valid @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
 		Optional<AccountResource> existingAccount = accountService.getAccountByNameAndDomainName(account, domain);
 		return existingAccount.map(a -> {
@@ -69,7 +69,7 @@ public class BccController {
 
 	@PutMapping(value = "/outgoing")
 	public ResponseEntity<BccResource> editOutgoingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account, 
-			@Valid @RequestBody BccResource bcc, BindingResult result) {
+	                                                   @Valid @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
 		Optional<AccountResource> accountResource = accountService.getAccountByNameAndDomainName(account, domain);
 		return accountResource.map(a -> {
@@ -90,7 +90,7 @@ public class BccController {
 
 	@PutMapping(value = "/incoming")
 	public ResponseEntity<BccResource> editIncomingBcc(@PathVariable("domain") String domain, @PathVariable("account") String account,
-			@Valid @RequestBody BccResource bcc, BindingResult result) {
+	                                                   @Valid @RequestBody BccResource bcc, BindingResult result) {
 		checkForErrors(result);
 		Optional<AccountResource> accountResource = accountService.getAccountByNameAndDomainName(account, domain);
 		return accountResource.map(a -> {

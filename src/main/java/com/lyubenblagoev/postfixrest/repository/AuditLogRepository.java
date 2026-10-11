@@ -30,6 +30,6 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
                                                                                  Pageable pageable);
 
     List<AuditLog> findByScopeAccountIdAndEntityTypeInOrderByOccurredAtDescIdDesc(Long scopeAccountId,
-                                                                                   Collection<AuditEntityType> entityTypes,
-                                                                                   Pageable pageable);
+                                                                                  Collection<AuditEntityType> entityTypes,
+                                                                                  Pageable pageable);
 }

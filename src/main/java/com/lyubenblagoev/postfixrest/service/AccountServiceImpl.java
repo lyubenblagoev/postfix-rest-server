@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.Crypt;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +36,7 @@ public class AccountServiceImpl implements AccountService {
 	private final AuditLogService auditLogService;
 	
 	public AccountServiceImpl(AccountRepository accountRepository, DomainRepository domainRepository,
-			MailServerConfiguration mailServerConfiguration, AuditLogService auditLogService) {
+	                          MailServerConfiguration mailServerConfiguration, AuditLogService auditLogService) {
 		this.accountRepository = accountRepository;
 		this.domainRepository = domainRepository;
 		this.mailServerConfiguration = mailServerConfiguration;
@@ -55,6 +57,12 @@ public class AccountServiceImpl implements AccountService {
 				.map(AccountResource::fromAccount)
 				.collect(Collectors.toList());
 	} 
+
+	@Override
+	public Page<AccountResource> getAccountsByDomainName(String name, Pageable pageable) {
+		return accountRepository.findByDomainNameOrderByUsernameAscIdAsc(name, pageable)
+				.map(AccountResource::fromAccount);
+	}
 
 	@Override
 	public Optional<AccountResource> getAccountByNameAndDomainName(String username, String domainName) {

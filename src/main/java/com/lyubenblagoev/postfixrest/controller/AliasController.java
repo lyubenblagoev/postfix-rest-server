@@ -2,10 +2,13 @@ package com.lyubenblagoev.postfixrest.controller;
 
 import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.NotFoundException;
+import com.lyubenblagoev.postfixrest.configuration.PaginationProperties;
 import com.lyubenblagoev.postfixrest.service.AliasService;
 import com.lyubenblagoev.postfixrest.service.DomainService;
 import com.lyubenblagoev.postfixrest.service.model.AliasChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.AliasResource;
+import com.lyubenblagoev.postfixrest.service.model.PagedResponse;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -22,25 +25,33 @@ public class AliasController {
 	
 	private final AliasService aliasService;
 	private final DomainService domainService;
+	private final PaginationProperties paginationProperties;
 	
-	public AliasController(AliasService aliasService, DomainService domainService) {
+	public AliasController(AliasService aliasService, DomainService domainService,
+	                       PaginationProperties paginationProperties) {
 		this.aliasService = aliasService;
 		this.domainService = domainService;
+		this.paginationProperties = paginationProperties;
 	}
 
 	@GetMapping
-	public Collection<AliasResource> getAliases(@PathVariable("domain") String domain) {
-		return aliasService.getAliasesByDomainName(domain);
+	public PagedResponse<AliasResource> getAliases(@PathVariable("domain") String domain,
+	                                               @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize) {
+		return PagedResponse.from(aliasService.getAliasesByDomainName(domain,
+				paginationProperties.toPageable(page, pageSize, Sort.by("alias", "email", "id"))));
 	}
 	
 	@GetMapping(value = "/{name}")
-	public Collection<AliasResource> getAliases(@PathVariable("domain") String domain, @PathVariable("name") String name) {
-		return aliasService.getAliasByDomainNameAndName(domain, name);
+	public PagedResponse<AliasResource> getAliases(@PathVariable("domain") String domain,
+	                                               @PathVariable("name") String name, @RequestParam(required = false) Integer page,
+	                                               @RequestParam(required = false) Integer pageSize) {
+		return PagedResponse.from(aliasService.getAliasByDomainNameAndName(domain, name,
+				paginationProperties.toPageable(page, pageSize, Sort.by("email", "id"))));
 	}
 	
 	@GetMapping(value = "/{name}/{email:.+}")
 	public ResponseEntity<AliasResource> getAlias(@PathVariable("domain") String domain,
-			@PathVariable("name") String name, @PathVariable("email") String email) {
+	                                              @PathVariable("name") String name, @PathVariable("email") String email) {
 		return aliasService.getAliasByDomainNameAndNameAndEmail(domain, name, email)
 				.map(alias -> ResponseEntity.ok().body(alias))
 				.orElseThrow(() -> new NotFoundException(ALIAS_NOT_FOUND_MESSAGE));

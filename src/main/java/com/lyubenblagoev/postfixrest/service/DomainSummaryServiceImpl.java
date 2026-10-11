@@ -7,6 +7,8 @@ import com.lyubenblagoev.postfixrest.repository.DomainAccountAggregate;
 import com.lyubenblagoev.postfixrest.repository.DomainAliasAggregate;
 import com.lyubenblagoev.postfixrest.repository.DomainRepository;
 import com.lyubenblagoev.postfixrest.service.model.DomainSummaryResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +60,28 @@ public class DomainSummaryServiceImpl implements DomainSummaryService {
         Map<Long, DomainSummaryResource.AliasSummary> aliases = aliasSummaries(
                 aliasRepository.findAggregatesByDomainIds(domainIds));
         return domains.stream().map(domain -> toResource(domain, accounts, aliases)).collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<DomainSummaryResource> getAllDomainSummaries(Collection<Long> domainIds, Pageable pageable) {
+        Page<Domain> domains;
+        if (domainIds == null) {
+            domains = domainRepository.findAll(pageable);
+        } else if (domainIds.isEmpty()) {
+            return Page.empty(pageable);
+        } else {
+            domains = domainRepository.findByIdIn(domainIds, pageable);
+        }
+
+        List<Long> pageDomainIds = domains.getContent().stream().map(Domain::getId).toList();
+        if (pageDomainIds.isEmpty()) {
+            return domains.map(domain -> toResource(domain, Map.of(), Map.of()));
+        }
+        Map<Long, DomainSummaryResource.AccountSummary> accounts = accountSummaries(
+                accountRepository.findAggregatesByDomainIds(pageDomainIds));
+        Map<Long, DomainSummaryResource.AliasSummary> aliases = aliasSummaries(
+                aliasRepository.findAggregatesByDomainIds(pageDomainIds));
+        return domains.map(domain -> toResource(domain, accounts, aliases));
     }
 
     @Override

@@ -43,7 +43,10 @@ class DomainControllerIntegrationTest {
                 get(PATH_API_V_1_DOMAINS)
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("[]")));
+                .andExpect(jsonPath("$.items", hasSize(0)))
+                .andExpect(jsonPath("$.page", is(1)))
+                .andExpect(jsonPath("$.pageSize", is(50)))
+                .andExpect(jsonPath("$.total", is(0)));
     }
 
     @Test
@@ -88,13 +91,35 @@ class DomainControllerIntegrationTest {
         String token = jwtTokenProvider.createToken("admin@example.com", Collections.emptyList());
         mockMvc.perform(
                 get(PATH_API_V_1_DOMAINS)
-                        .header("Authorization", "Bearer " + token))
+                .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.total", is(1)));
     }
 
     @Test
     @Order(6)
+    public void getAllDomains_shouldReturnRequestedPage() throws Exception {
+        String token = jwtTokenProvider.createToken("admin@example.com", Collections.emptyList());
+        mockMvc.perform(
+                post(PATH_API_V_1_DOMAINS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content("{ \"name\": \"example.net\", \"enabled\": true }"))
+                .andExpect(status().is2xxSuccessful());
+
+        mockMvc.perform(get(PATH_API_V_1_DOMAINS + "?page=2&pageSize=1")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", is(2)))
+                .andExpect(jsonPath("$.pageSize", is(1)))
+                .andExpect(jsonPath("$.total", is(2)))
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].name", is("example.net")));
+    }
+
+    @Test
+    @Order(7)
     public void getDomain_shouldReturnDisabledDomainInstance() throws Exception {
         String token = jwtTokenProvider.createToken("admin@example.com", Collections.emptyList());
         mockMvc.perform(
@@ -106,7 +131,7 @@ class DomainControllerIntegrationTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     public void delete_shouldSucceed() throws Exception {
         String token = jwtTokenProvider.createToken("admin@example.com", Collections.emptyList());
         mockMvc.perform(
@@ -122,6 +147,14 @@ class DomainControllerIntegrationTest {
                 delete(PATH_API_V_1_DOMAINS + "/example.org")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void list_shouldRejectPageSizeAboveConfiguredMaximum() throws Exception {
+        String token = jwtTokenProvider.createToken("admin@example.com", Collections.emptyList());
+        mockMvc.perform(get(PATH_API_V_1_DOMAINS + "?pageSize=201")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
     }
 
 }

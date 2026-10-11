@@ -2,16 +2,18 @@ package com.lyubenblagoev.postfixrest.controller;
 
 import com.lyubenblagoev.postfixrest.BadRequestException;
 import com.lyubenblagoev.postfixrest.NotFoundException;
+import com.lyubenblagoev.postfixrest.configuration.PaginationProperties;
 import com.lyubenblagoev.postfixrest.service.AccountService;
 import com.lyubenblagoev.postfixrest.service.DomainService;
 import com.lyubenblagoev.postfixrest.service.model.AccountChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.AccountResource;
+import com.lyubenblagoev.postfixrest.service.model.PagedResponse;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/domains/{domain}/accounts")
@@ -21,15 +23,20 @@ public class AccountController {
 
 	private final AccountService accountService;
 	private final DomainService domainService;
+	private final PaginationProperties paginationProperties;
 
-	public AccountController(AccountService accountService, DomainService domainService) {
+	public AccountController(AccountService accountService, DomainService domainService,
+	                         PaginationProperties paginationProperties) {
 		this.accountService = accountService;
 		this.domainService = domainService;
+		this.paginationProperties = paginationProperties;
 	}
 
 	@GetMapping
-	public List<AccountResource> getAccounts(@PathVariable("domain") String domain) {
-		return accountService.getAccountsByDomainName(domain);
+	public PagedResponse<AccountResource> getAccounts(@PathVariable("domain") String domain,
+	                                                  @RequestParam(required = false) Integer page, @RequestParam(required = false) Integer pageSize) {
+		return PagedResponse.from(accountService.getAccountsByDomainName(domain,
+				paginationProperties.toPageable(page, pageSize, Sort.by("username", "id"))));
 	}
 
 	@GetMapping(value = "/{account:.+}")
@@ -65,7 +72,7 @@ public class AccountController {
 
 	@PutMapping(value = "/{account:.+}")
 	public ResponseEntity<?> edit(@PathVariable("domain") String domainName, @PathVariable("account") String account,
-			@Valid @RequestBody AccountChangeRequest accountRequest, BindingResult result) {
+	                              @Valid @RequestBody AccountChangeRequest accountRequest, BindingResult result) {
 		if (result.hasErrors()) {
 			throw new BadRequestException(ControllerUtils.getError(result));
 		}

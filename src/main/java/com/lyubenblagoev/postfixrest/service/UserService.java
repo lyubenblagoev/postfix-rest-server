@@ -17,7 +17,7 @@ public interface UserService {
     void addDeviceTokens(String email, DeviceInformation device, String refreshToken, Date refreshTokenExpirationDate);
 
     void updateDeviceTokens(String email, DeviceInformation device, String previousRefreshToken,
-            String newRefreshToken, Date refreshTokenExpirationDate);
+                            String newRefreshToken, Date refreshTokenExpirationDate);
 
     void removeDeviceToken(String email, String refreshToken);
 }

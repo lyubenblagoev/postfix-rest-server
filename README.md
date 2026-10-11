@@ -26,6 +26,15 @@ When the project is built you'll find the project jar file in the `target` direc
 
 This is a Spring Boot project and to configure it for your system you need to put an `application.properties` file in the directory in which you install the application jar file. The application.properties file must include `mail-server.vhosts-path` key to specify the path to the virtual hosts folder for your mail server (the default is `/var/mail/vhosts`). Take a look at the `src/main/resources/application.properties` file for other default values.
 
+Collection endpoints support pagination. The default page size and maximum allowed page size can be changed in `application.properties`:
+
+```properties
+pagination.default-page-size=50
+pagination.max-page-size=200
+```
+
+The default page size must not exceed the configured maximum. A requested `pageSize` larger than the maximum returns HTTP 400.
+
 By default, the application is configured to connect to a PostgreSQL server database `servermail` running on the local machine with username `mailuser` and password `mailpassword`.
 
 During development, you can set `spring.profiles.active` to `dev` to use an H2 database as configured in `src/main/resources/application-dev.properties`. Activating the `dev` profile also activates SQL query and debug level logging.
@@ -68,7 +77,14 @@ Each response object has this shape:
 }
 ```
 
-Account counts are calculated from account rows. Alias counts are calculated by distinct alias name: an alias is `healthy` when all recipients are enabled, `paused` when all are disabled, and `needsReview` when enabled and disabled recipients are mixed. Empty domains return zero counts. The collection is ordered by domain name. A missing domain returns HTTP 404. These endpoints require the same authentication as the other `/api/v1/**` endpoints.
+The collection endpoint returns these objects in the `items` array of the common paginated response. Its optional query parameters are:
+
+| Parameter | Type    | Description                                         |
+|-----------|---------|-----------------------------------------------------|
+| page      | integer | Optional 1-based page number. Defaults to `1`.     |
+| pageSize  | integer | Optional page size. Uses configured pagination defaults. |
+
+Account counts are calculated from account rows. Alias counts are calculated by distinct alias name: an alias is `healthy` when all recipients are enabled, `paused` when all are disabled, and `needsReview` when enabled and disabled recipients are mixed. Empty domains return zero counts. The collection is ordered by domain name. Its `total` is the number of domains visible to the current user. A missing domain returns HTTP 404. These endpoints require the same authentication as the other `/api/v1/**` endpoints.
 
 ### Audit log
 
@@ -159,6 +175,21 @@ Note that when you rename or delete account or domain, the corresponding directo
 
 Here's a short overview of the possible REST API calls:
 
+### Pagination
+
+Collection endpoints accept optional `page` and `pageSize` query parameters and return this response shape:
+
+```json
+{
+  "items": [],
+  "page": 1,
+  "pageSize": 50,
+  "total": 137
+}
+```
+
+`page` is 1-based and defaults to `1`. If `pageSize` is omitted, it uses `pagination.default-page-size` (default `50`). The maximum is `pagination.max-page-size` (default `200`); requesting a larger page size returns HTTP 400. `total` counts only resources visible to the current user and matching the endpoint filters. Each collection endpoint below lists its pagination parameters.
+
 ### Authentication
 
 **Log in using the administrative user's credentials**
@@ -196,26 +227,45 @@ Workspace endpoints require an authenticated request, except for accepting an in
 
     GET /api/v1/workspaces
 
-Returns an array of workspace resources:
+| Parameter | Type    | Description                                     |
+|-----------|---------|-------------------------------------------------|
+| page      | integer | Optional 1-based page number. Defaults to `1`. |
+| pageSize  | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
+
+Returns paged workspace resources:
 
 ```json
-[
-  { "id": 12, "name": "Operations", "domainNames": ["example.com", "example.org"] }
-]
+{
+  "items": [
+    { "id": 12, "name": "Operations", "domainNames": ["example.com", "example.org"] }
+  ],
+  "page": 1,
+  "pageSize": 50,
+  "total": 1
+}
 ```
 
 **List workspaces managed by the current user**
 
     GET /api/v1/workspaces/managed
 
-Returns the workspaces where the authenticated user has an enabled `WORKSPACE_ADMIN` mapping, using the same resource shape. Users with no such mappings receive an empty array. Global administrators receive all workspaces.
+| Parameter | Type    | Description                                     |
+|-----------|---------|-------------------------------------------------|
+| page      | integer | Optional 1-based page number. Defaults to `1`. |
+| pageSize  | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
+
+Returns a paginated response containing workspaces where the authenticated user has an enabled `WORKSPACE_ADMIN` mapping. Users with no such mappings receive an empty `items` array and `total: 0`. Global administrators receive all workspaces.
 
 **List workspaces accessible to the current user**
 
     GET /api/v1/workspaces/accessible
 
-Returns workspaces where the authenticated user has an enabled mapping of any workspace role.
-Global administrators receive all workspaces.
+| Parameter | Type    | Description                                     |
+|-----------|---------|-------------------------------------------------|
+| page      | integer | Optional 1-based page number. Defaults to `1`. |
+| pageSize  | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
+
+Returns a paginated response containing workspaces where the authenticated user has an enabled mapping of any workspace role. Global administrators receive all workspaces.
 
 **Create a workspace (administrator only)**
 
@@ -300,13 +350,20 @@ Returns HTTP 204.
 | Parameter   | Type    | Description                                      |
 |-------------|---------|--------------------------------------------------|
 | workspaceId | integer | **Required** The ID of the workspace (path)      |
+| page        | integer | Optional 1-based page number. Defaults to `1`.   |
+| pageSize    | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
 
-Returns an array of mappings:
+Returns paged mappings:
 
 ```json
-[
-  { "id": 45, "email": "user@example.com", "role": "WORKSPACE_ADMIN" }
-]
+{
+  "items": [
+    { "id": 45, "email": "user@example.com", "role": "WORKSPACE_ADMIN" }
+  ],
+  "page": 1,
+  "pageSize": 50,
+  "total": 1
+}
 ```
 
 **Add or change a user's workspace mapping (workspace administrator or administrator)**
@@ -392,6 +449,13 @@ Successful acceptance returns HTTP 204. The invitee then signs in using `/api/v1
 
     GET /api/v1/domains
 
+| Parameter | Type    | Description                                     |
+|-----------|---------|-------------------------------------------------|
+| page      | integer | Optional 1-based page number. Defaults to `1`. |
+| pageSize  | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
+
+Returns paged domain resources. `total` includes only domains available to the authenticated user through workspace mappings.
+
 **Get information for a specific domain**
 
     GET /api/v1/domains/${domain}
@@ -435,7 +499,11 @@ Successful acceptance returns HTTP 204. The invitee then signs in using `/api/v1
 
 | Parameter | Type   | Description                         |
 |-----------|--------|-------------------------------------|
-| name      | string | **Required** The name of the domain |
+| domain    | string | **Required** The name of the domain |
+| page      | integer | Optional 1-based page number. Defaults to `1`. |
+| pageSize  | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
+
+Returns paged account resources for the specified domain.
 
 **Get information for an email account with given username and domain name**
 
@@ -489,6 +557,10 @@ Successful acceptance returns HTTP 204. The invitee then signs in using `/api/v1
 | Parameter | Type   | Description                         |
 |-----------|--------|-------------------------------------|
 | domain    | string | **Required** The name of the domain |
+| page      | integer | Optional 1-based page number. Defaults to `1`. |
+| pageSize  | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
+
+Returns paged aliases for the specified domain.
 
 **Get all aliases for domain and email prefix**
 
@@ -498,6 +570,10 @@ Successful acceptance returns HTTP 204. The invitee then signs in using `/api/v1
 |-----------|--------|---------------------------------------------------|
 | domain    | string | **Required** The name of the domain               |
 | name      | string | **Required** The email prefix for the given alias |
+| page      | integer | Optional 1-based page number. Defaults to `1`.   |
+| pageSize  | integer | Optional page size; uses the configured default and maximum (50 and 200 by default). |
+
+Returns paged recipients for the given alias prefix.
 
 **Get information for specific alias in the given domain that is forwarding to the given recipient**
 

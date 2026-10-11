@@ -17,6 +17,8 @@ import com.lyubenblagoev.postfixrest.repository.AliasRepository;
 import com.lyubenblagoev.postfixrest.repository.DomainRepository;
 import com.lyubenblagoev.postfixrest.service.model.AliasChangeRequest;
 import com.lyubenblagoev.postfixrest.service.model.AliasResource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,7 +29,7 @@ public class AliasServiceImpl implements AliasService {
 	private final AuditLogService auditLogService;
 	
 	public AliasServiceImpl(AliasRepository aliasRepository, DomainRepository domainRepository,
-			AuditLogService auditLogService) {
+	                        AuditLogService auditLogService) {
 		this.aliasRepository = aliasRepository;
 		this.domainRepository = domainRepository;
 		this.auditLogService = auditLogService;
@@ -46,12 +48,24 @@ public class AliasServiceImpl implements AliasService {
 				.map(AliasResource::fromAlias)
 				.collect(Collectors.toList());
 	}
+
+	@Override
+	public Page<AliasResource> getAliasesByDomainName(String domainName, Pageable pageable) {
+		return aliasRepository.findByDomainNameOrderByAliasAscEmailAscIdAsc(domainName, pageable)
+				.map(AliasResource::fromAlias);
+	}
 	
 	@Override
 	public Collection<AliasResource> getAliasByDomainNameAndName(String domainName, String name) {
 		return aliasRepository.findByDomainNameAndAlias(domainName, name).stream()
 				.map(AliasResource::fromAlias)
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public Page<AliasResource> getAliasByDomainNameAndName(String domainName, String name, Pageable pageable) {
+		return aliasRepository.findByDomainNameAndAliasOrderByEmailAscIdAsc(domainName, name, pageable)
+				.map(AliasResource::fromAlias);
 	}
 	
 	@Override
